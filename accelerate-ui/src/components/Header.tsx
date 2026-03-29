@@ -1,14 +1,24 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { LogOut } from 'lucide-react'
+import { useAuth } from '../api/auth'
 
-const NAV_ITEMS = [
-  { path: '/', label: 'Home' },
-  { path: '/organizations', label: 'Organizations' },
-  { path: '/benchmarks', label: 'Benchmarks' },
+const ADMIN_NAV = [
+  { path: '/admin', label: 'Home' },
+  { path: '/executive-dashboard?orgId=1', label: 'Org Dashboard' },
+  { path: '/user-dashboard?userId=2', label: 'User View' },
 ]
 
 export function Header({ variant = 'admin' }: { variant?: 'admin' | 'accelerate' }) {
   const location = useLocation()
+  const navigate = useNavigate()
+  const { user, logout } = useAuth()
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+  }
+
+  const navItems = user?.primaryRole === 'admin' ? ADMIN_NAV : []
 
   return (
     <header className="border-b border-gray-200 bg-white sticky top-0 z-50">
@@ -20,28 +30,39 @@ export function Header({ variant = 'admin' }: { variant?: 'admin' | 'accelerate'
           </span>
         </Link>
 
-        <nav className="flex items-center gap-1">
-          {NAV_ITEMS.map(item => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`px-3 py-2 rounded-md text-sm transition-colors ${
-                location.pathname === item.path
-                  ? 'bg-cyan-light text-cyan font-medium'
-                  : 'text-nahq-gray hover:bg-gray-50'
-              }`}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        {navItems.length > 0 && (
+          <nav className="flex items-center gap-1">
+            {navItems.map(item => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`px-3 py-2 rounded-md text-sm transition-colors ${
+                  location.pathname === item.path.split('?')[0]
+                    ? 'bg-cyan-light text-cyan font-medium'
+                    : 'text-nahq-gray hover:bg-gray-50'
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+        )}
 
         <div className="flex items-center gap-4">
-          <span className="text-sm text-nahq-gray">Admin</span>
-          <button className="flex items-center gap-2 text-sm text-nahq-gray hover:text-nahq-charcoal transition-colors">
-            <LogOut size={16} />
-            Logout
-          </button>
+          {user && (
+            <>
+              <span className="text-sm text-nahq-gray">
+                {user.firstName} {user.lastName}
+                <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-gray-100">{user.primaryRole}</span>
+              </span>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 text-sm text-nahq-gray hover:text-nahq-charcoal transition-colors"
+              >
+                <LogOut size={16} />
+              </button>
+            </>
+          )}
         </div>
       </div>
     </header>

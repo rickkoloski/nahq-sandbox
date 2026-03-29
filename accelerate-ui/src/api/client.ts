@@ -1,31 +1,41 @@
-// API client — all calls go through Vite proxy to localhost:4003
+import type { AuthUser } from './auth'
+import type * as T from '../types/api'
 
-const API_KEY = 'nahq-sandbox-2026'
+function getStoredUser(): AuthUser | null {
+  try {
+    const stored = localStorage.getItem('nahq_user')
+    return stored ? JSON.parse(stored) : null
+  } catch { return null }
+}
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(path, {
-    ...options,
-    headers: {
-      'X-Api-Key': API_KEY,
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
-  })
+  const user = getStoredUser()
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...options?.headers as Record<string, string>,
+  }
+
+  if (user) {
+    // Admin users get API key, others get user impersonation
+    if (user.roles.includes('admin')) {
+      headers['X-Api-Key'] = 'nahq-sandbox-2026'
+    } else {
+      headers['X-User-Id'] = String(user.userId)
+    }
+  }
+
+  const res = await fetch(path, { ...options, headers })
   if (!res.ok) throw new Error(`API error: ${res.status} ${res.statusText}`)
   return res.json()
 }
 
-export function fetchAsUser<T>(path: string, userId: number): Promise<T> {
-  return apiFetch(path, { headers: { 'X-User-Id': String(userId), 'X-Api-Key': '' } })
-}
-
 export const api = {
-  competencies: () => apiFetch<import('../types/api').CompetencyDomain[]>('/api/competencies'),
-  roles: () => apiFetch<import('../types/api').RoleType[]>('/api/roles'),
-  userGaps: (userId: number) => apiFetch<import('../types/api').GapAnalysis>(`/api/users/${userId}/gaps`),
-  userBenchmarks: (userId: number) => apiFetch<import('../types/api').BenchmarkComparison>(`/api/users/${userId}/benchmarks`),
-  userCourses: (userId: number, topGaps = 3) => apiFetch<import('../types/api').CourseSimilarity>(`/api/users/${userId}/recommended-courses?topGaps=${topGaps}`),
-  orgCapability: (orgId: number) => apiFetch<import('../types/api').OrgCapabilitySummary>(`/api/organizations/${orgId}/capability-summary`),
+  competencies: () => apiFetch<T.CompetencyDomain[]>('/api/competencies'),
+  roles: () => apiFetch<T.RoleType[]>('/api/roles'),
+  userGaps: (userId: number) => apiFetch<T.GapAnalysis>(`/api/users/${userId}/gaps`),
+  userBenchmarks: (userId: number) => apiFetch<T.BenchmarkComparison>(`/api/users/${userId}/benchmarks`),
+  userCourses: (userId: number, topGaps = 3) => apiFetch<T.CourseSimilarity>(`/api/users/${userId}/recommended-courses?topGaps=${topGaps}`),
+  orgCapability: (orgId: number) => apiFetch<T.OrgCapabilitySummary>(`/api/organizations/${orgId}/capability-summary`),
   seed: (count = 100) => apiFetch<Record<string, number>>(`/api/seed/generate?userCount=${count}`, { method: 'POST' }),
   seedCourses: () => apiFetch<Record<string, number>>('/api/courses/seed', { method: 'POST' }),
   refreshViews: () => apiFetch<Record<string, number>>('/api/analytics/refresh', { method: 'POST' }),

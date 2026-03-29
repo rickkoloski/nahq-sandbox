@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useNavigate } from 'react-router-dom'
+import { LogOut } from 'lucide-react'
 import { api } from '../api/client'
+import { useAuth } from '../api/auth'
 import { KpiCard } from '../components/KpiCard'
 import type { GapAnalysis, BenchmarkComparison, CourseSimilarity } from '../types/api'
 
@@ -17,7 +19,9 @@ const DOMAIN_COLORS: Record<string, string> = {
 
 export function UserDashboard() {
   const [params] = useSearchParams()
-  const userId = Number(params.get('userId') || 2)
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+  const userId = Number(params.get('userId') || user?.userId || 2)
   const [gaps, setGaps] = useState<GapAnalysis | null>(null)
   const [benchmarks, setBenchmarks] = useState<BenchmarkComparison | null>(null)
   const [courses, setCourses] = useState<CourseSimilarity | null>(null)
@@ -49,6 +53,9 @@ export function UserDashboard() {
             <span className="text-sm font-medium text-nahq-charcoal">Accelerate</span>
           </div>
           <span className="text-sm text-nahq-gray">{gaps.userName}</span>
+          <button onClick={() => { logout(); navigate('/login') }} className="text-nahq-gray hover:text-nahq-charcoal">
+            <LogOut size={16} />
+          </button>
         </div>
       </header>
 

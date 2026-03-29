@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useSearchParams, Link } from 'react-router-dom'
-import { ChevronLeft, ChevronDown, ChevronRight, BarChart3, Target, TrendingUp } from 'lucide-react'
+import { useSearchParams, Link, useNavigate } from 'react-router-dom'
+import { ChevronLeft, ChevronDown, ChevronRight, BarChart3, Target, TrendingUp, LogOut } from 'lucide-react'
 import { api } from '../api/client'
+import { useAuth } from '../api/auth'
 import { KpiCard } from '../components/KpiCard'
 import { ProgressBar } from '../components/ProgressBar'
 import type { OrgCapabilitySummary, GapAnalysis } from '../types/api'
@@ -12,7 +13,9 @@ const DOMAIN_COLORS = [
 
 export function ExecutiveDashboard() {
   const [params] = useSearchParams()
-  const orgId = Number(params.get('orgId') || 1)
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+  const orgId = Number(params.get('orgId') || user?.organizationId || 1)
   const [orgData, setOrgData] = useState<OrgCapabilitySummary | null>(null)
   const [expandedSection, setExpandedSection] = useState<string | null>('participation')
   const [loading, setLoading] = useState(true)
@@ -39,12 +42,15 @@ export function ExecutiveDashboard() {
           </div>
           <div className="flex items-center gap-4">
             <Link
-              to={`/user-dashboard?userId=1`}
+              to={`/user-dashboard`}
               className="px-4 py-2 border border-cyan rounded-md text-sm text-cyan hover:bg-cyan-light transition-colors"
             >
               My View
             </Link>
-            <span className="text-sm text-nahq-gray">Sarah</span>
+            <span className="text-sm text-nahq-gray">{user?.firstName}</span>
+            <button onClick={() => { logout(); navigate('/login') }} className="text-nahq-gray hover:text-nahq-charcoal">
+              <LogOut size={16} />
+            </button>
           </div>
         </div>
       </header>

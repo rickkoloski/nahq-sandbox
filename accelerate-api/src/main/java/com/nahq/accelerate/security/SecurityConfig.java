@@ -30,6 +30,8 @@ public class SecurityConfig {
                 // Public endpoints
                 .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                 .requestMatchers("/swagger-ui/**", "/api-docs/**", "/swagger-ui.html").permitAll()
+                // Login — public
+                .requestMatchers("/api/auth/**").permitAll()
                 // Seed endpoints — admin only
                 .requestMatchers("/api/seed/**").hasRole("ADMIN")
                 .requestMatchers("/api/courses/seed").hasRole("ADMIN")

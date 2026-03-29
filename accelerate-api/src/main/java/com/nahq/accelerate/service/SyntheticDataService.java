@@ -99,6 +99,15 @@ public class SyntheticDataService {
             cycleByOrg.put(org.getId(), cycle);
         }
 
+        // Create demo accounts (executive + participant with clean emails)
+        Organization tgh = organizations.get(0); // Tampa General Hospital
+        createDemoUser("sarah.chen@tgh.org", "Sarah", "Chen", tgh, executiveRole,
+            cycleByOrg.get(tgh.getId()), fv, competencies,
+            new double[]{3.8, 4.1, 3.2, 3.5, 3.9, 4.3, 3.0, 3.7});
+        createDemoUser("michael.reeves@tgh.org", "Michael", "Reeves", tgh, participantRole,
+            cycleByOrg.get(tgh.getId()), fv, competencies,
+            new double[]{2.5, 3.8, 2.2, 3.0, 3.6, 4.0, 2.0, 3.4});
+
         // Create users distributed across orgs
         String[] firstNames = {"Sarah", "Michael", "Jennifer", "David", "Lisa", "James", "Maria",
             "Robert", "Patricia", "William", "Linda", "Richard", "Elizabeth", "Thomas", "Susan",
@@ -169,10 +178,50 @@ public class SyntheticDataService {
 
         return Map.of(
             "organizations", organizations.size(),
-            "users", users.size(),
-            "assessments", assessmentsCreated,
-            "results", resultsCreated,
+            "users", users.size() + 2, // +2 demo accounts
+            "assessments", assessmentsCreated + 2,
+            "results", resultsCreated + 58, // 29 competencies x 2 demo users
             "competencies", competencies.size()
         );
+    }
+
+    private void createDemoUser(String email, String firstName, String lastName,
+                                 Organization org, RoleType roleType,
+                                 AssessmentCycle cycle, CompetencyFrameworkVersion fv,
+                                 List<Competency> competencies, double[] domainBaselines) {
+        AppUser user = new AppUser();
+        user.setEmail(email);
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setOrganization(org);
+        user.setStatus("ACTIVE");
+        user = userRepo.save(user);
+
+        UserRole role = new UserRole();
+        role.setUser(user);
+        role.setRoleType(roleType);
+        role.setOrganization(org);
+        role.setFromDate(LocalDate.of(2025, 1, 1));
+        userRoleRepo.save(role);
+
+        Assessment assessment = new Assessment();
+        assessment.setUser(user);
+        assessment.setAssessmentCycle(cycle);
+        assessment.setStatus("SCORED");
+        assessment = assessmentRepo.save(assessment);
+
+        for (Competency comp : competencies) {
+            int domainIdx = comp.getDomain().getDisplayOrder() - 1;
+            double baseline = domainBaselines[domainIdx];
+            double score = baseline + (comp.getDisplayOrder() * 0.15);
+            score = Math.max(1.0, Math.min(5.0, score));
+
+            AssessmentResult result = new AssessmentResult();
+            result.setAssessment(assessment);
+            result.setCompetency(comp);
+            result.setFrameworkVersion(fv);
+            result.setScore(BigDecimal.valueOf(score).setScale(2, RoundingMode.HALF_UP));
+            resultRepo.save(result);
+        }
     }
 }
