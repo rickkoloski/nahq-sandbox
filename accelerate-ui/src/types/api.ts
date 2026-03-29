@@ -103,3 +103,19 @@ export interface CourseSimilarity {
   courses: SimilarCourse[]
   queryTimeMs: number
 }
+
+export interface PlatformStats {
+  organizations: number
+  users: number
+  courses: number
+  domains: number
+  competencies: number
+}
+
+export interface OrgStats {
+  totalUsers: number
+  assessmentsCompleted: number
+  assessmentsNotStarted: number
+  completionPercent: number
+  lastAssessmentDate: string | null
+}

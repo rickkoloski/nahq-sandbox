@@ -156,6 +156,7 @@ public class SyntheticDataService {
             assessment.setUser(user);
             assessment.setAssessmentCycle(cycle);
             assessment.setStatus("SCORED");
+            assessment.setScoredAt(java.time.Instant.now());
             assessment = assessmentRepo.save(assessment);
 
             for (Competency comp : competencies) {
@@ -208,6 +209,7 @@ public class SyntheticDataService {
         assessment.setUser(user);
         assessment.setAssessmentCycle(cycle);
         assessment.setStatus("SCORED");
+        assessment.setScoredAt(java.time.Instant.now());
         assessment = assessmentRepo.save(assessment);
 
         for (Competency comp : competencies) {

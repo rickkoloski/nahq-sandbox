@@ -5,7 +5,7 @@ import { api } from '../api/client'
 import { useAuth } from '../api/auth'
 import { KpiCard } from '../components/KpiCard'
 import { ProgressBar } from '../components/ProgressBar'
-import type { OrgCapabilitySummary, GapAnalysis } from '../types/api'
+import type { OrgCapabilitySummary, OrgStats } from '../types/api'
 
 const DOMAIN_COLORS = [
   '#003DA5', '#00B5E2', '#8BC53F', '#F68B1F', '#ED1C24', '#6B4C9A', '#99154B', '#00A3E0'
@@ -17,12 +17,18 @@ export function ExecutiveDashboard() {
   const navigate = useNavigate()
   const orgId = Number(params.get('orgId') || user?.organizationId || 1)
   const [orgData, setOrgData] = useState<OrgCapabilitySummary | null>(null)
+  const [orgStats, setOrgStats] = useState<OrgStats | null>(null)
   const [expandedSection, setExpandedSection] = useState<string | null>('participation')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     setLoading(true)
-    api.orgCapability(orgId).then(d => { setOrgData(d); setLoading(false) }).catch(() => setLoading(false))
+    Promise.all([
+      api.orgCapability(orgId),
+      api.orgStats(orgId),
+    ]).then(([cap, stats]) => {
+      setOrgData(cap); setOrgStats(stats); setLoading(false)
+    }).catch(() => setLoading(false))
   }, [orgId])
 
   if (loading) return <div className="p-8 text-nahq-gray">Loading dashboard...</div>
@@ -75,13 +81,13 @@ export function ExecutiveDashboard() {
         <div className="grid grid-cols-4 gap-4 mb-8">
           <KpiCard
             label="ASSESSMENT COMPLETION"
-            value={`${Math.round((orgData.totalParticipants / (orgData.totalParticipants + 13)) * 100)}%`}
-            subtitle={`(${orgData.totalParticipants}/${orgData.totalParticipants + 13})`}
+            value={orgStats ? `${orgStats.completionPercent}%` : '...'}
+            subtitle={orgStats ? `(${orgStats.assessmentsCompleted}/${orgStats.totalUsers})` : ''}
           />
           <KpiCard
             label="ORGANIZATIONAL SCORE"
             value={orgData.overallOrgAvg.toFixed(2)}
-            subtitle="Proficient level"
+            subtitle={orgData.overallOrgAvg >= 3.5 ? 'Advanced level' : orgData.overallOrgAvg >= 2.5 ? 'Proficient level' : 'Foundational level'}
           />
           <KpiCard
             label="BENCHMARK GAP"
@@ -91,7 +97,7 @@ export function ExecutiveDashboard() {
           />
           <KpiCard
             label="LAST ASSESSMENT"
-            value="Jan 27, 2026"
+            value={orgStats?.lastAssessmentDate ? new Date(orgStats.lastAssessmentDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'No data'}
             subtitle="Recommend reassessment in 6 months"
             color="var(--charcoal)"
           />
@@ -102,24 +108,28 @@ export function ExecutiveDashboard() {
           {/* Assessment Participation */}
           <Section
             title="Assessment Participation & Adoption"
-            subtitle={`${orgData.totalParticipants} participants • Track by role & status`}
+            subtitle={orgStats ? `${orgStats.completionPercent}% completion rate • Track by role & status` : 'Loading...'}
             icon={<BarChart3 size={24} className="text-cyan" />}
             expanded={expandedSection === 'participation'}
             onToggle={() => setExpandedSection(expandedSection === 'participation' ? null : 'participation')}
           >
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="border border-gray-200 rounded-lg p-4">
-                <div className="text-sm text-nahq-gray">Completed</div>
-                <div className="text-3xl font-bold text-cyan">{orgData.totalParticipants}</div>
-                <div className="text-sm text-nahq-gray">out of {orgData.totalParticipants + 13} invited</div>
-              </div>
-              <div className="border border-gray-200 rounded-lg p-4">
-                <div className="text-sm text-nahq-gray">Not Started</div>
-                <div className="text-3xl font-bold text-nahq-charcoal">13</div>
-                <div className="text-sm text-nahq-gray">invitation sent</div>
-              </div>
-            </div>
-            <ProgressBar value={orgData.totalParticipants} max={orgData.totalParticipants + 13} label="Completion Progress" />
+            {orgStats && (
+              <>
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className="border border-gray-200 rounded-lg p-4">
+                    <div className="text-sm text-nahq-gray">Completed</div>
+                    <div className="text-3xl font-bold text-cyan">{orgStats.assessmentsCompleted}</div>
+                    <div className="text-sm text-nahq-gray">out of {orgStats.totalUsers} users</div>
+                  </div>
+                  <div className="border border-gray-200 rounded-lg p-4">
+                    <div className="text-sm text-nahq-gray">Not Started</div>
+                    <div className="text-3xl font-bold text-nahq-charcoal">{orgStats.assessmentsNotStarted}</div>
+                    <div className="text-sm text-nahq-gray">invitation sent</div>
+                  </div>
+                </div>
+                <ProgressBar value={orgStats.assessmentsCompleted} max={orgStats.totalUsers} label="Completion Progress" />
+              </>
+            )}
           </Section>
 
           {/* Domain Performance */}

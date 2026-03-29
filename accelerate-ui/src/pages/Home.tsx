@@ -1,21 +1,30 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Users, Target, BookOpen, Shield, Settings } from 'lucide-react'
 import { Header } from '../components/Header'
-
-const CARDS = [
-  { icon: Users, title: 'Client & User Management', desc: 'Manage client organizations, invite users, assign roles, and control access across all sites', stat: '3 Clients · 100 Users', href: '/organizations', color: '#00A3E0' },
-  { icon: Target, title: 'Benchmarks & Standards', desc: 'Define role benchmarks, peer groups, and governance standards', stat: '8 Domains', href: '/benchmarks', color: '#F68B1F' },
-  { icon: BookOpen, title: 'Learning Governance', desc: 'Manage score-to-content mapping rules and LMS catalog', stat: '39 Courses', href: '/courses', color: '#8BC53F' },
-  { icon: Shield, title: 'User Access & Permissions', desc: 'Manage user access, revoke accounts, and initiate password resets', stat: '100 Users', href: '/organizations', color: '#6B4C9A' },
-  { icon: Settings, title: 'Platform Admins', desc: 'Invite and manage NAHQ staff who have admin access to this governance portal', stat: '1 Admin', href: '#', color: '#99154B' },
-]
+import { api } from '../api/client'
+import type { PlatformStats } from '../types/api'
 
 export function Home() {
+  const [stats, setStats] = useState<PlatformStats | null>(null)
+
+  useEffect(() => {
+    api.platformStats().then(setStats).catch(() => {})
+  }, [])
+
+  const cards = [
+    { icon: Users, title: 'Client & User Management', desc: 'Manage client organizations, invite users, assign roles, and control access across all sites', stat: stats ? `${stats.organizations} Clients · ${stats.users} Users` : 'Loading...', href: '/executive-dashboard?orgId=1', color: '#00A3E0' },
+    { icon: Target, title: 'Benchmarks & Standards', desc: 'Define role benchmarks, peer groups, and governance standards', stat: stats ? `${stats.domains} Domains · ${stats.competencies} Competencies` : 'Loading...', href: '/executive-dashboard?orgId=1', color: '#F68B1F' },
+    { icon: BookOpen, title: 'Learning Governance', desc: 'Manage score-to-content mapping rules and LMS catalog', stat: stats ? `${stats.courses} Courses` : 'Loading...', href: '/executive-dashboard?orgId=1', color: '#8BC53F' },
+    { icon: Shield, title: 'User Access & Permissions', desc: 'Manage user access, revoke accounts, and initiate password resets', stat: stats ? `${stats.users} Users` : 'Loading...', href: '/executive-dashboard?orgId=1', color: '#6B4C9A' },
+    { icon: Settings, title: 'Platform Admins', desc: 'Invite and manage NAHQ staff who have admin access to this governance portal', stat: '1 Admin', href: '#', color: '#99154B' },
+  ]
+
   return (
     <div className="min-h-screen bg-white">
       <Header />
       <main className="max-w-7xl mx-auto px-6 py-8">
-        {/* Hero — matching Tim's gradient banner */}
+        {/* Hero */}
         <div className="rounded-2xl p-10 mb-10 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #E6F6FC 0%, #C5D7DD 100%)' }}>
           <div className="relative z-10">
             <div className="text-2xl font-bold mb-1" style={{ color: 'var(--cyan-primary)' }}>NAHQ</div>
@@ -27,19 +36,18 @@ export function Home() {
               and oversee the entire Workforce Accelerator ecosystem from one central hub.
             </p>
           </div>
-          {/* Decorative circles — matching Tim's bg pattern */}
           <div className="absolute top-8 right-12 w-48 h-48 rounded-full bg-white/20" />
           <div className="absolute -bottom-8 right-32 w-32 h-32 rounded-full bg-white/15" />
         </div>
 
-        {/* Dashboard Cards — matching Tim's 3+2 grid */}
+        {/* Dashboard Cards */}
         <div className="grid grid-cols-3 gap-6 mb-6">
-          {CARDS.slice(0, 3).map(card => (
+          {cards.slice(0, 3).map(card => (
             <DashboardCard key={card.title} {...card} />
           ))}
         </div>
         <div className="grid grid-cols-3 gap-6">
-          {CARDS.slice(3).map(card => (
+          {cards.slice(3).map(card => (
             <DashboardCard key={card.title} {...card} />
           ))}
         </div>
@@ -48,7 +56,9 @@ export function Home() {
   )
 }
 
-function DashboardCard({ icon: Icon, title, desc, stat, href, color }: typeof CARDS[0]) {
+function DashboardCard({ icon: Icon, title, desc, stat, href, color }: {
+  icon: typeof Users, title: string, desc: string, stat: string, href: string, color: string
+}) {
   return (
     <Link
       to={href}

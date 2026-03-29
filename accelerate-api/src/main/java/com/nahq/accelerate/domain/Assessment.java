@@ -81,5 +81,6 @@ public class Assessment {
     public Instant getStartedAt() { return startedAt; }
     public Instant getCompletedAt() { return completedAt; }
     public Instant getScoredAt() { return scoredAt; }
+    public void setScoredAt(Instant scoredAt) { this.scoredAt = scoredAt; }
     public List<AssessmentResult> getResults() { return results; }
 }
