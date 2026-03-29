@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+/* NAHQ Design Tokens — extracted from Tim's Base44 prototype */
+:root {
+  --cyan-primary: #00A3E0;
+  --yellow-accent: #FFED00;
+  --charcoal: #3D3D3D;
+
+  /* Domain Colors */
+  --domain-leadership: #003DA5;
+  --domain-process: #00B5E2;
+  --domain-population: #8BC53F;
+  --domain-analytics: #F68B1F;
+  --domain-safety: #ED1C24;
+  --domain-regulatory: #6B4C9A;
+  --domain-accountability: #99154B;
+  --domain-professional: #00A3E0;
+
+  --light-gray: #F5F5F5;
+  --medium-gray: #707070;
+  --cool-gray: #C5D7DD;
+}
+
+@theme {
+  --color-cyan: #00A3E0;
+  --color-cyan-light: #E6F6FC;
+  --color-nahq-charcoal: #3D3D3D;
+  --color-nahq-light: #F5F5F5;
+  --color-nahq-gray: #707070;
+  --color-orange: #F68B1F;
+  --color-green: #22C55E;
+  --color-red: #ED1C24;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--charcoal);
+  background: white;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+}
