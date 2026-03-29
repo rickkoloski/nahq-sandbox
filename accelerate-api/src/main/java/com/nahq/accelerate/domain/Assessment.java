@@ -27,11 +27,7 @@ public class Assessment {
     private AssessmentCycle assessmentCycle;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private AppUser user;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "party_id")
+    @JoinColumn(name = "party_id", nullable = false)
     private Party party;
 
     @Column(nullable = false, length = 20)
@@ -78,8 +74,6 @@ public class Assessment {
     public void setId(Long id) { this.id = id; }
     public AssessmentCycle getAssessmentCycle() { return assessmentCycle; }
     public void setAssessmentCycle(AssessmentCycle ac) { this.assessmentCycle = ac; }
-    public AppUser getUser() { return user; }
-    public void setUser(AppUser user) { this.user = user; }
     public Party getParty() { return party; }
     public void setParty(Party party) { this.party = party; }
     public String getStatus() { return status; }

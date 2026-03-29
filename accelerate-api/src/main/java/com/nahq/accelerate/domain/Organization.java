@@ -17,6 +17,10 @@ public class Organization {
     @Column(name = "org_type", length = 50)
     private String orgType;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "party_id")
+    private Party party;
+
     @Column(nullable = false, length = 20)
     private String status;
 
@@ -38,6 +42,8 @@ public class Organization {
     public void setName(String name) { this.name = name; }
     public String getOrgType() { return orgType; }
     public void setOrgType(String orgType) { this.orgType = orgType; }
+    public Party getParty() { return party; }
+    public void setParty(Party party) { this.party = party; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 }

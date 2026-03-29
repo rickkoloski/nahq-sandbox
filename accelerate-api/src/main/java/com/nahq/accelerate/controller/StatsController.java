@@ -33,8 +33,7 @@ public class StatsController {
     }
 
     @GetMapping("/api/organizations/{orgId}/sites")
-    @Operation(summary = "List subsidiary sites for an organization via Party relationships",
-               description = "Uses Silverston Party/Relationship model — sites are organizations connected by SUBSIDIARY_OF relationship")
+    @Operation(summary = "List subsidiary sites for an organization via Party relationships")
     public List<Map<String, Object>> orgSites(@PathVariable Long orgId) {
         @SuppressWarnings("unchecked")
         List<Object[]> rows = em.createNativeQuery(
@@ -61,25 +60,41 @@ public class StatsController {
     }
 
     @GetMapping("/api/organizations/{orgId}/stats")
-    @Operation(summary = "Organization assessment statistics",
-               description = "Completion counts, rates, and last assessment date — all from live data")
+    @Operation(summary = "Organization assessment statistics via Party model",
+               description = "Counts individuals employed by this org (via PartyRelationship), " +
+                             "their assessment completion, and last assessment date.")
     public OrgStatsDto orgStats(@PathVariable Long orgId) {
+        // Count individuals employed by this org via PartyRelationship
         int totalUsers = ((Number) em.createNativeQuery(
-            "SELECT COUNT(*) FROM app_user WHERE organization_id = :orgId"
+            "SELECT COUNT(DISTINCT pr.from_party_id) " +
+            "FROM party_relationship pr " +
+            "JOIN party_relationship_type prt ON pr.relationship_type_id = prt.id " +
+            "JOIN organization o ON o.party_id = pr.to_party_id " +
+            "WHERE o.id = :orgId AND prt.internal_id = 'employed_by' AND pr.thru_date IS NULL"
         ).setParameter("orgId", orgId).getSingleResult()).intValue();
 
+        // Count completed assessments for individuals in this org
         int completed = ((Number) em.createNativeQuery(
-            "SELECT COUNT(*) FROM assessment a JOIN app_user u ON a.user_id = u.id " +
-            "WHERE u.organization_id = :orgId AND a.status = 'SCORED'"
+            "SELECT COUNT(DISTINCT a.id) " +
+            "FROM assessment a " +
+            "JOIN party_relationship pr ON a.party_id = pr.from_party_id AND pr.thru_date IS NULL " +
+            "JOIN party_relationship_type prt ON pr.relationship_type_id = prt.id AND prt.internal_id = 'employed_by' " +
+            "JOIN organization o ON o.party_id = pr.to_party_id " +
+            "WHERE o.id = :orgId AND a.status = 'SCORED'"
         ).setParameter("orgId", orgId).getSingleResult()).intValue();
 
         int notStarted = totalUsers - completed;
         int pct = totalUsers > 0 ? Math.round((float) completed / totalUsers * 100) : 0;
 
+        // Last assessment date
         @SuppressWarnings("unchecked")
         List<Object> dates = em.createNativeQuery(
-            "SELECT MAX(a.scored_at) FROM assessment a JOIN app_user u ON a.user_id = u.id " +
-            "WHERE u.organization_id = :orgId AND a.status = 'SCORED'"
+            "SELECT MAX(a.scored_at) " +
+            "FROM assessment a " +
+            "JOIN party_relationship pr ON a.party_id = pr.from_party_id AND pr.thru_date IS NULL " +
+            "JOIN party_relationship_type prt ON pr.relationship_type_id = prt.id AND prt.internal_id = 'employed_by' " +
+            "JOIN organization o ON o.party_id = pr.to_party_id " +
+            "WHERE o.id = :orgId AND a.status = 'SCORED'"
         ).setParameter("orgId", orgId).getResultList();
 
         Instant lastDate = null;

@@ -5,6 +5,7 @@ import java.time.Instant;
 
 /**
  * Auth-only entity. Identity lives in Party → Individual.
+ * Org membership lives in PartyRelationship (EMPLOYED_BY).
  * User is how you get in the door; Party is who you are.
  */
 @Entity
@@ -21,14 +22,6 @@ public class AppUser {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "party_id", nullable = false)
     private Party party;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "organization_id")
-    private Organization organization;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "site_id")
-    private Site site;
 
     @Column(nullable = false, length = 20)
     private String status;
@@ -51,10 +44,6 @@ public class AppUser {
     public void setEmail(String email) { this.email = email; }
     public Party getParty() { return party; }
     public void setParty(Party party) { this.party = party; }
-    public Organization getOrganization() { return organization; }
-    public void setOrganization(Organization organization) { this.organization = organization; }
-    public Site getSite() { return site; }
-    public void setSite(Site site) { this.site = site; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 }

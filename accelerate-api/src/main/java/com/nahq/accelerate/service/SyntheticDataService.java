@@ -223,27 +223,42 @@ public class SyntheticDataService {
             partyRole.setFromDate(LocalDate.of(2025, 1, 1));
             partyRoleRepo.save(partyRole);
 
-            // AppUser (auth record — references party_id)
+            // EMPLOYED_BY relationship (individual → org)
+            Object employedByTypeId = em.createNativeQuery(
+                "SELECT id FROM party_relationship_type WHERE internal_id = 'employed_by'"
+            ).getSingleResult();
+            em.createNativeQuery(
+                "INSERT INTO party_relationship (relationship_type_id, from_party_id, to_party_id, from_date) " +
+                "VALUES (:relType, :fromId, :toId, '2025-01-01')"
+            ).setParameter("relType", employedByTypeId)
+             .setParameter("fromId", party.getId())
+             .setParameter("toId", org.getParty() != null ? org.getParty().getId() :
+                 em.createNativeQuery("SELECT party_id FROM organization WHERE id = :orgId")
+                     .setParameter("orgId", org.getId()).getSingleResult())
+             .executeUpdate();
+
+            // AppUser (auth record — email + party_id only)
             AppUser user = new AppUser();
             user.setEmail(first.toLowerCase() + "." + last.toLowerCase() + "." + i + "@example.com");
-            user.setOrganization(org);
             user.setParty(party);
             user.setStatus("ACTIVE");
             users.add(userRepo.save(user));
-
         }
 
         // Create assessments with realistic score distributions
-        // Scores follow a normal distribution around domain-specific means
-        double[] domainMeans = {3.2, 3.5, 2.8, 3.0, 3.3, 3.8, 2.9, 3.4}; // varying by domain
+        double[] domainMeans = {3.2, 3.5, 2.8, 3.0, 3.3, 3.8, 2.9, 3.4};
         int assessmentsCreated = 0;
         int resultsCreated = 0;
 
+        // Map party → org for cycle lookup (via PartyRole.organization)
         for (AppUser user : users) {
-            AssessmentCycle cycle = cycleByOrg.get(user.getOrganization().getId());
+            // Get the user's org via their party_role
+            Organization userOrg = partyRoleRepo.findByPartyIdAndThruDateIsNull(user.getParty().getId())
+                .stream().filter(pr -> pr.getOrganization() != null).findFirst()
+                .map(PartyRole::getOrganization).orElse(organizations.get(0));
+            AssessmentCycle cycle = cycleByOrg.get(userOrg.getId());
 
             Assessment assessment = new Assessment();
-            assessment.setUser(user);
             assessment.setParty(user.getParty());
             assessment.setAssessmentCycle(cycle);
             assessment.setStatus("SCORED");
@@ -300,16 +315,29 @@ public class SyntheticDataService {
         partyRole.setFromDate(LocalDate.of(2025, 1, 1));
         partyRoleRepo.save(partyRole);
 
-        // AppUser (auth record)
+        // EMPLOYED_BY relationship
+        Object employedByTypeId = em.createNativeQuery(
+            "SELECT id FROM party_relationship_type WHERE internal_id = 'employed_by'"
+        ).getSingleResult();
+        Object orgPartyId = em.createNativeQuery(
+            "SELECT party_id FROM organization WHERE id = :orgId"
+        ).setParameter("orgId", org.getId()).getSingleResult();
+        em.createNativeQuery(
+            "INSERT INTO party_relationship (relationship_type_id, from_party_id, to_party_id, from_date) " +
+            "VALUES (:relType, :fromId, :toId, '2025-01-01')"
+        ).setParameter("relType", employedByTypeId)
+         .setParameter("fromId", party.getId())
+         .setParameter("toId", orgPartyId)
+         .executeUpdate();
+
+        // AppUser (auth record — email + party_id only)
         AppUser user = new AppUser();
         user.setEmail(email);
-        user.setOrganization(org);
         user.setParty(party);
         user.setStatus("ACTIVE");
         user = userRepo.save(user);
 
         Assessment assessment = new Assessment();
-        assessment.setUser(user);
         assessment.setParty(party);
         assessment.setAssessmentCycle(cycle);
         assessment.setStatus("SCORED");
