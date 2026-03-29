@@ -1,0 +1,34 @@
+# Java / Gradle
+accelerate-api/.gradle/
+accelerate-api/build/
+accelerate-api/bin/
+*.class
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+# Node / React
+accelerate-ui/node_modules/
+accelerate-ui/dist/
+accelerate-ui/.pnpm-store/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+
+# Archives
+*.zip
+
+# Setup scripts (contains no secrets but not needed in repo)
+setup-java.sh

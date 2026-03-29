@@ -1,0 +1,205 @@
+# NAHQ Data Model — UDM Target State (Remediated)
+# Generated from UDM assessment of NAHQ Data Model v1.0
+# Focuses on People, Roles, Participation, Contact, and Status patterns
+
+direction: right
+
+# ─── Party Abstraction (Finding 3) ───
+
+party: {
+  shape: sql_table
+  id: int {constraint: primary_key}
+  party_type: "enum(individual, organization)"
+  display_name: varchar(100)
+  uuid: uuid {constraint: unique}
+  created_at: timestamp
+  updated_at: timestamp
+}
+
+user: "User (Individual)" {
+  shape: sql_table
+  id: int {constraint: primary_key}
+  party_id: int {constraint: [foreign_key; unique]}
+  email: varchar(255) {constraint: unique}
+  name: varchar(100)
+  job_title: varchar(100)
+  years_experience: int
+  external_unique_user_id: varchar(255)
+  external_source: "enum(nimble, entra_id)"
+  onboarding_completed: boolean
+  last_login: timestamp
+}
+
+organization: {
+  shape: sql_table
+  id: int {constraint: primary_key}
+  party_id: int {constraint: [foreign_key; unique]}
+  name: varchar(255)
+  type: "enum(health_system, hospital, clinic, ...)"
+  org_level: "enum(ROOT, SITE, DEPARTMENT)"
+  parent_org_id: "int (self-ref, nullable)"
+  size_beds: int
+  size_employees: int
+}
+
+# ─── Role Normalization (Finding 2) ───
+
+role_type: {
+  shape: sql_table
+  id: int {constraint: primary_key}
+  name: varchar(50)
+  internal_identifier: varchar(50) {constraint: unique}
+  description: varchar(255)
+}
+
+party_role: {
+  shape: sql_table
+  id: int {constraint: primary_key}
+  party_id: int {constraint: foreign_key}
+  role_type_id: int {constraint: foreign_key}
+  from_date: date
+  thru_date: "date (nullable)"
+}
+
+# ─── Contact Mechanisms (Finding 4) ───
+
+contact_mechanism: {
+  shape: sql_table
+  id: int {constraint: primary_key}
+  mechanism_type: "enum(email, phone, postal)"
+}
+
+email_address: {
+  shape: sql_table
+  id: int {constraint: primary_key}
+  contact_mechanism_id: int {constraint: [foreign_key; unique]}
+  email: varchar(255)
+}
+
+phone_number: {
+  shape: sql_table
+  id: int {constraint: primary_key}
+  contact_mechanism_id: int {constraint: [foreign_key; unique]}
+  phone_number: varchar(25)
+}
+
+postal_address: {
+  shape: sql_table
+  id: int {constraint: primary_key}
+  contact_mechanism_id: int {constraint: [foreign_key; unique]}
+  street: varchar(255)
+  city: varchar(50)
+  state: varchar(50)
+  postal_code: varchar(15)
+  country: varchar(50)
+}
+
+contact: {
+  shape: sql_table
+  id: int {constraint: primary_key}
+  party_id: int {constraint: foreign_key}
+  contact_mechanism_id: int {constraint: foreign_key}
+  from_date: date
+  thru_date: "date (nullable)"
+}
+
+contact_purpose: {
+  shape: sql_table
+  id: int {constraint: primary_key}
+  contact_id: int {constraint: foreign_key}
+  purpose_type: "varchar(50)"
+}
+
+# ─── Status History (Finding 5) ───
+
+status_type: {
+  shape: sql_table
+  id: int {constraint: primary_key}
+  name: varchar(50)
+  internal_identifier: varchar(50) {constraint: unique}
+  applies_to: "varchar(50)"
+}
+
+status_application: {
+  shape: sql_table
+  id: int {constraint: primary_key}
+  status_type_id: int {constraint: foreign_key}
+  target_type: "varchar(50)"
+  target_id: int
+  from_date: timestamp
+  thru_date: "timestamp (nullable)"
+  applied_by: int {constraint: foreign_key}
+}
+
+# ─── Engagement Participation (Finding 5) ───
+
+engagement: {
+  shape: sql_table
+  id: int {constraint: primary_key}
+  organization_id: int {constraint: foreign_key}
+  cohort_name: varchar(100)
+  engagement_type: "enum(ORG, INDIVIDUAL)"
+  start_date: timestamp
+  expected_end_date: timestamp
+}
+
+engagement_participant: {
+  shape: sql_table
+  id: int {constraint: primary_key}
+  engagement_id: int {constraint: foreign_key}
+  party_role_id: int {constraint: foreign_key}
+  participation_type: "enum(participant, facilitator, sponsor, observer)"
+  from_date: date
+  thru_date: "date (nullable)"
+  status: "enum(active, completed, dropped)"
+}
+
+# ─── Course-Competency Bridge (Finding 6) ───
+
+lms_course: {
+  shape: sql_table
+  id: int {constraint: primary_key}
+  title: varchar(255)
+  format: "enum(ONLINE, INSTRUCTOR_LED, HYBRID)"
+  difficulty_level: "enum(FOUND, PROF, ADV)"
+  oasis_course_id: varchar(100)
+}
+
+course_competency_mapping: {
+  shape: sql_table
+  id: int {constraint: primary_key}
+  course_id: int {constraint: foreign_key}
+  competency_id: int {constraint: foreign_key}
+  framework_version_id: int {constraint: foreign_key}
+  weight: decimal
+}
+
+# ═══ Relationships ═══
+
+# Party subtypes
+user.party_id -> party.id: subtype
+organization.party_id -> party.id: subtype
+
+# Roles
+party_role.party_id -> party.id: plays
+party_role.role_type_id -> role_type.id: defined by
+
+# Contact mechanisms
+contact.party_id -> party.id: reached at
+contact.contact_mechanism_id -> contact_mechanism.id
+email_address.contact_mechanism_id -> contact_mechanism.id: subtype
+phone_number.contact_mechanism_id -> contact_mechanism.id: subtype
+postal_address.contact_mechanism_id -> contact_mechanism.id: subtype
+contact_purpose.contact_id -> contact.id: purpose of
+
+# Status history
+status_application.status_type_id -> status_type.id: applies
+status_application.applied_by -> party.id: by
+
+# Engagement participation
+engagement.organization_id -> party.id: org
+engagement_participant.engagement_id -> engagement.id: in
+engagement_participant.party_role_id -> party_role.id: as role
+
+# Course-Competency bridge
+course_competency_mapping.course_id -> lms_course.id: course
