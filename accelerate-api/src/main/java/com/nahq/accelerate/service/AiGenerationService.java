@@ -155,12 +155,12 @@ public class AiGenerationService {
                                 String contextSummary, String response, String model,
                                 int inputTokens, int outputTokens, long latencyMs) {
         em.createNativeQuery(
-            "INSERT INTO ai_generation_log (generation_type, user_id, organization_id, prompt_hash, " +
+            "INSERT INTO ai_generation_log (generation_type, party_id, organization_id, prompt_hash, " +
             "context_summary, response_text, model, input_tokens, output_tokens, latency_ms) " +
-            "VALUES (:type, :userId, :orgId, :hash, :context, :response, :model, :inTok, :outTok, :latency)"
+            "VALUES (:type, :partyId, :orgId, :hash, :context, :response, :model, :inTok, :outTok, :latency)"
         )
             .setParameter("type", type)
-            .setParameter("userId", userId)
+            .setParameter("partyId", userId) // userId is resolved to partyId by caller
             .setParameter("orgId", orgId)
             .setParameter("hash", promptHash)
             .setParameter("context", contextSummary.length() > 2000 ? contextSummary.substring(0, 2000) : contextSummary)

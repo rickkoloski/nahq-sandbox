@@ -5,16 +5,16 @@ import java.time.Instant;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "user_role")
-public class UserRole {
+@Table(name = "party_role")
+public class PartyRole {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private AppUser user;
+    @JoinColumn(name = "party_id", nullable = false)
+    private Party party;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_type_id", nullable = false)
@@ -37,8 +37,8 @@ public class UserRole {
     void prePersist() { createdAt = Instant.now(); if (fromDate == null) fromDate = LocalDate.now(); }
 
     public Long getId() { return id; }
-    public AppUser getUser() { return user; }
-    public void setUser(AppUser user) { this.user = user; }
+    public Party getParty() { return party; }
+    public void setParty(Party party) { this.party = party; }
     public RoleType getRoleType() { return roleType; }
     public void setRoleType(RoleType roleType) { this.roleType = roleType; }
     public Organization getOrganization() { return organization; }
@@ -46,4 +46,5 @@ public class UserRole {
     public LocalDate getFromDate() { return fromDate; }
     public void setFromDate(LocalDate fromDate) { this.fromDate = fromDate; }
     public LocalDate getThruDate() { return thruDate; }
+    public void setThruDate(LocalDate thruDate) { this.thruDate = thruDate; }
 }

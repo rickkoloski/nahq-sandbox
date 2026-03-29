@@ -3,6 +3,11 @@ package com.nahq.accelerate.domain;
 import jakarta.persistence.*;
 import java.time.Instant;
 
+/**
+ * Auth-only entity. Identity lives in Party → Individual.
+ * Org membership lives in PartyRelationship (EMPLOYED_BY).
+ * User is how you get in the door; Party is who you are.
+ */
 @Entity
 @Table(name = "app_user")
 public class AppUser {
@@ -14,19 +19,9 @@ public class AppUser {
     @Column(nullable = false, unique = true, length = 255)
     private String email;
 
-    @Column(name = "first_name", length = 100)
-    private String firstName;
-
-    @Column(name = "last_name", length = 100)
-    private String lastName;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "organization_id")
-    private Organization organization;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "site_id")
-    private Site site;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "party_id", nullable = false)
+    private Party party;
 
     @Column(nullable = false, length = 20)
     private String status;
@@ -47,15 +42,8 @@ public class AppUser {
     public void setId(Long id) { this.id = id; }
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
-    public String getFirstName() { return firstName; }
-    public void setFirstName(String firstName) { this.firstName = firstName; }
-    public String getLastName() { return lastName; }
-    public void setLastName(String lastName) { this.lastName = lastName; }
-    public Organization getOrganization() { return organization; }
-    public void setOrganization(Organization organization) { this.organization = organization; }
-    public Site getSite() { return site; }
-    public void setSite(Site site) { this.site = site; }
+    public Party getParty() { return party; }
+    public void setParty(Party party) { this.party = party; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
-    public String getFullName() { return firstName + " " + lastName; }
 }

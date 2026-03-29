@@ -207,16 +207,17 @@ public class CourseService {
     public CourseSimilarityDto findCoursesForTopGaps(Long userId, int topN) {
         long start = System.currentTimeMillis();
 
-        // Get user's top N gaps
+        // Resolve User → Party, then query via Party model
         @SuppressWarnings("unchecked")
         List<Object[]> gaps = em.createNativeQuery(
             "SELECT ar.competency_id, c.name, (ar.score - COALESCE(rt.target_score, 0)) AS gap " +
             "FROM assessment_result ar " +
             "JOIN assessment a ON ar.assessment_id = a.id " +
             "JOIN competency c ON ar.competency_id = c.id " +
-            "LEFT JOIN user_role ur ON a.user_id = ur.user_id AND ur.thru_date IS NULL " +
-            "LEFT JOIN role_target rt ON ur.role_type_id = rt.role_type_id AND ar.competency_id = rt.competency_id " +
-            "WHERE a.user_id = :userId AND a.status = 'SCORED' " +
+            "JOIN app_user u ON u.party_id = a.party_id " +
+            "LEFT JOIN party_role pr ON a.party_id = pr.party_id AND pr.thru_date IS NULL " +
+            "LEFT JOIN role_target rt ON pr.role_type_id = rt.role_type_id AND ar.competency_id = rt.competency_id " +
+            "WHERE u.id = :userId AND a.status = 'SCORED' " +
             "ORDER BY gap ASC " +
             "LIMIT :topN"
         ).setParameter("userId", userId).setParameter("topN", topN).getResultList();

@@ -13,35 +13,45 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+/**
+ * Gap analysis operates on Party, not User.
+ * User is the auth entry point; Party is the domain identity.
+ * userId → app_user.party_id → Party → PartyRole + AssessmentResults
+ */
 @Service
 public class GapAnalysisService {
 
     private final AppUserRepository userRepo;
-    private final UserRoleRepository userRoleRepo;
+    private final PartyRoleRepository partyRoleRepo;
     private final AssessmentResultRepository resultRepo;
     private final RoleTargetRepository targetRepo;
 
-    public GapAnalysisService(AppUserRepository userRepo, UserRoleRepository userRoleRepo,
+    public GapAnalysisService(AppUserRepository userRepo, PartyRoleRepository partyRoleRepo,
                               AssessmentResultRepository resultRepo, RoleTargetRepository targetRepo) {
         this.userRepo = userRepo;
-        this.userRoleRepo = userRoleRepo;
+        this.partyRoleRepo = partyRoleRepo;
         this.resultRepo = resultRepo;
         this.targetRepo = targetRepo;
     }
 
     @Transactional(readOnly = true)
     public GapAnalysisDto analyzeGaps(Long userId) {
+        // Resolve User → Party
         AppUser user = userRepo.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found: " + userId));
 
-        // Find user's active role
-        List<UserRole> activeRoles = userRoleRepo.findByUserIdAndThruDateIsNull(userId);
-        if (activeRoles.isEmpty()) {
-            throw new RuntimeException("User has no active role: " + userId);
+        Party party = user.getParty();
+        if (party == null) {
+            throw new RuntimeException("User has no Party identity: " + userId);
         }
 
-        // Use the first active role (typically participant)
-        UserRole activeRole = activeRoles.get(0);
+        // Find Party's active roles (not User's roles — Party is the domain identity)
+        List<PartyRole> activeRoles = partyRoleRepo.findByPartyIdAndThruDateIsNull(party.getId());
+        if (activeRoles.isEmpty()) {
+            throw new RuntimeException("Party has no active role: " + party.getDisplayName());
+        }
+
+        PartyRole activeRole = activeRoles.get(0);
         RoleType roleType = activeRole.getRoleType();
 
         // Get role targets for the published framework version
@@ -51,8 +61,8 @@ public class GapAnalysisService {
         Map<Long, RoleTarget> targetByCompetency = targets.stream()
             .collect(Collectors.toMap(t -> t.getCompetency().getId(), t -> t));
 
-        // Get user's most recent assessment results
-        List<AssessmentResult> results = resultRepo.findByAssessmentUserId(userId);
+        // Get assessment results via Party (not via User)
+        List<AssessmentResult> results = resultRepo.findByAssessmentPartyId(party.getId());
 
         // Deduplicate: keep latest result per competency
         Map<Long, AssessmentResult> latestByCompetency = new LinkedHashMap<>();
@@ -76,10 +86,10 @@ public class GapAnalysisService {
                     targetScore,
                     gap,
                     target != null ? target.getTargetLevel() : "UNKNOWN",
-                    0 // rank assigned after sorting
+                    0
                 );
             })
-            .sorted(Comparator.comparing(CompetencyGap::gap)) // largest negative gaps first
+            .sorted(Comparator.comparing(CompetencyGap::gap))
             .map(g -> new CompetencyGap(
                 g.competencyId(), g.competencyName(), g.domainName(),
                 g.score(), g.target(), g.gap(), g.targetLevel(),
@@ -87,7 +97,6 @@ public class GapAnalysisService {
             ))
             .toList();
 
-        // Overall averages
         BigDecimal avgScore = gaps.stream().map(CompetencyGap::score)
             .reduce(BigDecimal.ZERO, BigDecimal::add)
             .divide(BigDecimal.valueOf(Math.max(1, gaps.size())), 2, RoundingMode.HALF_UP);
@@ -97,7 +106,7 @@ public class GapAnalysisService {
 
         return new GapAnalysisDto(
             user.getId(),
-            user.getFullName(),
+            party.getDisplayName(),
             roleType.getName(),
             "2025-v1",
             gaps,

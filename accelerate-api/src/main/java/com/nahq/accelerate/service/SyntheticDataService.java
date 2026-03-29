@@ -17,7 +17,6 @@ public class SyntheticDataService {
     private final EntityManager em;
     private final OrganizationRepository orgRepo;
     private final AppUserRepository userRepo;
-    private final UserRoleRepository userRoleRepo;
     private final RoleTypeRepository roleTypeRepo;
     private final CompetencyRepository competencyRepo;
     private final CompetencyDomainRepository domainRepo;
@@ -26,19 +25,23 @@ public class SyntheticDataService {
     private final AssessmentRepository assessmentRepo;
     private final AssessmentResultRepository resultRepo;
     private final CompetencyFrameworkVersionRepository fvRepo;
+    private final PartyRepository partyRepo;
+    private final IndividualRepository individualRepo;
+    private final PartyRoleRepository partyRoleRepo;
 
     private final Random random = new Random(42); // Deterministic for reproducibility
 
     public SyntheticDataService(EntityManager em, OrganizationRepository orgRepo, AppUserRepository userRepo,
-                                 UserRoleRepository userRoleRepo, RoleTypeRepository roleTypeRepo,
+                                 RoleTypeRepository roleTypeRepo,
                                  CompetencyRepository competencyRepo, CompetencyDomainRepository domainRepo,
                                  EngagementRepository engagementRepo, AssessmentCycleRepository cycleRepo,
                                  AssessmentRepository assessmentRepo, AssessmentResultRepository resultRepo,
-                                 CompetencyFrameworkVersionRepository fvRepo) {
+                                 CompetencyFrameworkVersionRepository fvRepo,
+                                 PartyRepository partyRepo, IndividualRepository individualRepo,
+                                 PartyRoleRepository partyRoleRepo) {
         this.em = em;
         this.orgRepo = orgRepo;
         this.userRepo = userRepo;
-        this.userRoleRepo = userRoleRepo;
         this.roleTypeRepo = roleTypeRepo;
         this.competencyRepo = competencyRepo;
         this.domainRepo = domainRepo;
@@ -47,6 +50,9 @@ public class SyntheticDataService {
         this.assessmentRepo = assessmentRepo;
         this.resultRepo = resultRepo;
         this.fvRepo = fvRepo;
+        this.partyRepo = partyRepo;
+        this.individualRepo = individualRepo;
+        this.partyRoleRepo = partyRoleRepo;
     }
 
     @Transactional
@@ -195,35 +201,65 @@ public class SyntheticDataService {
             Organization org = organizations.get(i % organizations.size());
             String first = firstNames[i % firstNames.length];
             String last = lastNames[i / firstNames.length % lastNames.length];
+            RoleType roleType = i % 10 == 0 ? executiveRole : participantRole;
 
+            // Create Party + Individual (Silverston UDM)
+            Party party = new Party();
+            party.setPartyType("INDIVIDUAL");
+            party.setDisplayName(first + " " + last);
+            party = partyRepo.save(party);
+
+            Individual individual = new Individual();
+            individual.setParty(party);
+            individual.setFirstName(first);
+            individual.setLastName(last);
+            individualRepo.save(individual);
+
+            // PartyRole (new model — references party_id)
+            PartyRole partyRole = new PartyRole();
+            partyRole.setParty(party);
+            partyRole.setRoleType(roleType);
+            partyRole.setOrganization(org);
+            partyRole.setFromDate(LocalDate.of(2025, 1, 1));
+            partyRoleRepo.save(partyRole);
+
+            // EMPLOYED_BY relationship (individual → org)
+            Object employedByTypeId = em.createNativeQuery(
+                "SELECT id FROM party_relationship_type WHERE internal_id = 'employed_by'"
+            ).getSingleResult();
+            em.createNativeQuery(
+                "INSERT INTO party_relationship (relationship_type_id, from_party_id, to_party_id, from_date) " +
+                "VALUES (:relType, :fromId, :toId, '2025-01-01')"
+            ).setParameter("relType", employedByTypeId)
+             .setParameter("fromId", party.getId())
+             .setParameter("toId", org.getParty() != null ? org.getParty().getId() :
+                 em.createNativeQuery("SELECT party_id FROM organization WHERE id = :orgId")
+                     .setParameter("orgId", org.getId()).getSingleResult())
+             .executeUpdate();
+
+            // AppUser (auth record — email + party_id only)
             AppUser user = new AppUser();
             user.setEmail(first.toLowerCase() + "." + last.toLowerCase() + "." + i + "@example.com");
-            user.setFirstName(first);
-            user.setLastName(last);
-            user.setOrganization(org);
+            user.setParty(party);
             user.setStatus("ACTIVE");
             users.add(userRepo.save(user));
-
-            // Assign role: 90% participants, 10% executives
-            UserRole role = new UserRole();
-            role.setUser(user);
-            role.setRoleType(i % 10 == 0 ? executiveRole : participantRole);
-            role.setOrganization(org);
-            role.setFromDate(LocalDate.of(2025, 1, 1));
-            userRoleRepo.save(role);
         }
 
         // Create assessments with realistic score distributions
-        // Scores follow a normal distribution around domain-specific means
-        double[] domainMeans = {3.2, 3.5, 2.8, 3.0, 3.3, 3.8, 2.9, 3.4}; // varying by domain
+        double[] domainMeans = {3.2, 3.5, 2.8, 3.0, 3.3, 3.8, 2.9, 3.4};
         int assessmentsCreated = 0;
         int resultsCreated = 0;
 
+        // Map party → org for cycle lookup (via PartyRole.organization)
         for (AppUser user : users) {
-            AssessmentCycle cycle = cycleByOrg.get(user.getOrganization().getId());
+            // Get the user's org via their party_role
+            Organization userOrg = partyRoleRepo.findByPartyIdAndThruDateIsNull(user.getParty().getId())
+                .stream().filter(pr -> pr.getOrganization() != null).findFirst()
+                .map(PartyRole::getOrganization).orElse(organizations.get(0));
+            AssessmentCycle cycle = cycleByOrg.get(userOrg.getId());
 
             Assessment assessment = new Assessment();
-            assessment.setUser(user);
+            assessment.setParty(user.getParty());
             assessment.setAssessmentCycle(cycle);
             assessment.setStatus("SCORED");
             assessment.setScoredAt(java.time.Instant.now());
@@ -260,23 +296,49 @@ public class SyntheticDataService {
                                  Organization org, RoleType roleType,
                                  AssessmentCycle cycle, CompetencyFrameworkVersion fv,
                                  List<Competency> competencies, double[] domainBaselines) {
+        // Party + Individual (Silverston UDM)
+        Party party = new Party();
+        party.setPartyType("INDIVIDUAL");
+        party.setDisplayName(firstName + " " + lastName);
+        party = partyRepo.save(party);
+
+        Individual individual = new Individual();
+        individual.setParty(party);
+        individual.setFirstName(firstName);
+        individual.setLastName(lastName);
+        individualRepo.save(individual);
+
+        PartyRole partyRole = new PartyRole();
+        partyRole.setParty(party);
+        partyRole.setRoleType(roleType);
+        partyRole.setOrganization(org);
+        partyRole.setFromDate(LocalDate.of(2025, 1, 1));
+        partyRoleRepo.save(partyRole);
+
+        // EMPLOYED_BY relationship
+        Object employedByTypeId = em.createNativeQuery(
+            "SELECT id FROM party_relationship_type WHERE internal_id = 'employed_by'"
+        ).getSingleResult();
+        Object orgPartyId = em.createNativeQuery(
+            "SELECT party_id FROM organization WHERE id = :orgId"
+        ).setParameter("orgId", org.getId()).getSingleResult();
+        em.createNativeQuery(
+            "INSERT INTO party_relationship (relationship_type_id, from_party_id, to_party_id, from_date) " +
+            "VALUES (:relType, :fromId, :toId, '2025-01-01')"
+        ).setParameter("relType", employedByTypeId)
+         .setParameter("fromId", party.getId())
+         .setParameter("toId", orgPartyId)
+         .executeUpdate();
+
+        // AppUser (auth record — email + party_id only)
         AppUser user = new AppUser();
         user.setEmail(email);
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setOrganization(org);
+        user.setParty(party);
         user.setStatus("ACTIVE");
         user = userRepo.save(user);
 
-        UserRole role = new UserRole();
-        role.setUser(user);
-        role.setRoleType(roleType);
-        role.setOrganization(org);
-        role.setFromDate(LocalDate.of(2025, 1, 1));
-        userRoleRepo.save(role);
-
         Assessment assessment = new Assessment();
-        assessment.setUser(user);
+        assessment.setParty(party);
         assessment.setAssessmentCycle(cycle);
         assessment.setStatus("SCORED");
         assessment.setScoredAt(java.time.Instant.now());

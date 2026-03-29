@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface AssessmentResultRepository extends JpaRepository<AssessmentResult, Long> {
     List<AssessmentResult> findByAssessmentId(Long assessmentId);
-    List<AssessmentResult> findByAssessmentUserId(Long userId);
+    List<AssessmentResult> findByAssessmentPartyId(Long partyId);
 }
