@@ -30,14 +30,15 @@ public class AuthController {
             return ResponseEntity.badRequest().build();
         }
 
-        // Resolve User → Party → PartyRole
+        // Resolve User → Party → Individual (names) + PartyRole (roles)
         @SuppressWarnings("unchecked")
         List<Object[]> rows = em.createNativeQuery(
-            "SELECT u.id, u.email, u.first_name, u.last_name, " +
+            "SELECT u.id, u.email, i.first_name, i.last_name, " +
             "       o.name AS org_name, o.id AS org_id, rt.internal_id AS role " +
             "FROM app_user u " +
+            "JOIN party p ON u.party_id = p.id " +
+            "LEFT JOIN individual i ON i.party_id = p.id " +
             "LEFT JOIN organization o ON u.organization_id = o.id " +
-            "LEFT JOIN party p ON u.party_id = p.id " +
             "LEFT JOIN party_role pr ON p.id = pr.party_id AND pr.thru_date IS NULL " +
             "LEFT JOIN role_type rt ON pr.role_type_id = rt.id " +
             "WHERE LOWER(u.email) = LOWER(:email) AND u.status = 'ACTIVE'"

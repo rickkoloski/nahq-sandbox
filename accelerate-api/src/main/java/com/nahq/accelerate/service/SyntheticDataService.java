@@ -226,8 +226,6 @@ public class SyntheticDataService {
             // AppUser (auth record — references party_id)
             AppUser user = new AppUser();
             user.setEmail(first.toLowerCase() + "." + last.toLowerCase() + "." + i + "@example.com");
-            user.setFirstName(first);
-            user.setLastName(last);
             user.setOrganization(org);
             user.setParty(party);
             user.setStatus("ACTIVE");
@@ -305,8 +303,6 @@ public class SyntheticDataService {
         // AppUser (auth record)
         AppUser user = new AppUser();
         user.setEmail(email);
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
         user.setOrganization(org);
         user.setParty(party);
         user.setStatus("ACTIVE");

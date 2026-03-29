@@ -25,7 +25,7 @@ public class StatsController {
     @Operation(summary = "Platform-wide statistics for admin dashboard")
     public PlatformStatsDto platformStats() {
         int orgs = ((Number) em.createNativeQuery("SELECT COUNT(*) FROM organization").getSingleResult()).intValue();
-        int users = ((Number) em.createNativeQuery("SELECT COUNT(*) FROM app_user").getSingleResult()).intValue();
+        int users = ((Number) em.createNativeQuery("SELECT COUNT(*) FROM individual").getSingleResult()).intValue();
         int courses = ((Number) em.createNativeQuery("SELECT COUNT(*) FROM lms_course").getSingleResult()).intValue();
         int domains = ((Number) em.createNativeQuery("SELECT COUNT(*) FROM competency_domain").getSingleResult()).intValue();
         int competencies = ((Number) em.createNativeQuery("SELECT COUNT(*) FROM competency").getSingleResult()).intValue();
