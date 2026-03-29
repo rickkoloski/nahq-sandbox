@@ -30,16 +30,31 @@ public class AuthController {
             return ResponseEntity.badRequest().build();
         }
 
+        // Query via Party model when available, fallback to legacy user_role
         @SuppressWarnings("unchecked")
         List<Object[]> rows = em.createNativeQuery(
             "SELECT u.id, u.email, u.first_name, u.last_name, " +
             "       o.name AS org_name, o.id AS org_id, rt.internal_id AS role " +
             "FROM app_user u " +
             "LEFT JOIN organization o ON u.organization_id = o.id " +
-            "LEFT JOIN user_role ur ON u.id = ur.user_id AND ur.thru_date IS NULL " +
-            "LEFT JOIN role_type rt ON ur.role_type_id = rt.id " +
+            "LEFT JOIN party p ON u.party_id = p.id " +
+            "LEFT JOIN party_role pr ON p.id = pr.party_id AND pr.thru_date IS NULL " +
+            "LEFT JOIN role_type rt ON pr.role_type_id = rt.id " +
             "WHERE LOWER(u.email) = LOWER(:email) AND u.status = 'ACTIVE'"
         ).setParameter("email", email.trim()).getResultList();
+
+        // Fallback to legacy user_role if party_role returns no roles
+        if (!rows.isEmpty() && rows.stream().allMatch(r -> r[6] == null)) {
+            rows = em.createNativeQuery(
+                "SELECT u.id, u.email, u.first_name, u.last_name, " +
+                "       o.name AS org_name, o.id AS org_id, rt.internal_id AS role " +
+                "FROM app_user u " +
+                "LEFT JOIN organization o ON u.organization_id = o.id " +
+                "LEFT JOIN user_role ur ON u.id = ur.user_id AND ur.thru_date IS NULL " +
+                "LEFT JOIN role_type rt ON ur.role_type_id = rt.id " +
+                "WHERE LOWER(u.email) = LOWER(:email) AND u.status = 'ACTIVE'"
+            ).setParameter("email", email.trim()).getResultList();
+        }
 
         if (rows.isEmpty()) {
             return ResponseEntity.status(401).build();

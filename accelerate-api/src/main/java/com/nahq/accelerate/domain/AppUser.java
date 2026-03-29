@@ -20,6 +20,10 @@ public class AppUser {
     @Column(name = "last_name", length = 100)
     private String lastName;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "party_id")
+    private Party party;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organization_id")
     private Organization organization;
@@ -55,6 +59,8 @@ public class AppUser {
     public void setOrganization(Organization organization) { this.organization = organization; }
     public Site getSite() { return site; }
     public void setSite(Site site) { this.site = site; }
+    public Party getParty() { return party; }
+    public void setParty(Party party) { this.party = party; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
     public String getFullName() { return firstName + " " + lastName; }

@@ -26,6 +26,9 @@ public class SyntheticDataService {
     private final AssessmentRepository assessmentRepo;
     private final AssessmentResultRepository resultRepo;
     private final CompetencyFrameworkVersionRepository fvRepo;
+    private final PartyRepository partyRepo;
+    private final IndividualRepository individualRepo;
+    private final PartyRoleRepository partyRoleRepo;
 
     private final Random random = new Random(42); // Deterministic for reproducibility
 
@@ -34,7 +37,9 @@ public class SyntheticDataService {
                                  CompetencyRepository competencyRepo, CompetencyDomainRepository domainRepo,
                                  EngagementRepository engagementRepo, AssessmentCycleRepository cycleRepo,
                                  AssessmentRepository assessmentRepo, AssessmentResultRepository resultRepo,
-                                 CompetencyFrameworkVersionRepository fvRepo) {
+                                 CompetencyFrameworkVersionRepository fvRepo,
+                                 PartyRepository partyRepo, IndividualRepository individualRepo,
+                                 PartyRoleRepository partyRoleRepo) {
         this.em = em;
         this.orgRepo = orgRepo;
         this.userRepo = userRepo;
@@ -47,6 +52,9 @@ public class SyntheticDataService {
         this.assessmentRepo = assessmentRepo;
         this.resultRepo = resultRepo;
         this.fvRepo = fvRepo;
+        this.partyRepo = partyRepo;
+        this.individualRepo = individualRepo;
+        this.partyRoleRepo = partyRoleRepo;
     }
 
     @Transactional
@@ -195,19 +203,42 @@ public class SyntheticDataService {
             Organization org = organizations.get(i % organizations.size());
             String first = firstNames[i % firstNames.length];
             String last = lastNames[i / firstNames.length % lastNames.length];
+            RoleType roleType = i % 10 == 0 ? executiveRole : participantRole;
 
+            // Create Party + Individual (Silverston UDM)
+            Party party = new Party();
+            party.setPartyType("INDIVIDUAL");
+            party.setDisplayName(first + " " + last);
+            party = partyRepo.save(party);
+
+            Individual individual = new Individual();
+            individual.setParty(party);
+            individual.setFirstName(first);
+            individual.setLastName(last);
+            individualRepo.save(individual);
+
+            // PartyRole (new model — references party_id)
+            PartyRole partyRole = new PartyRole();
+            partyRole.setParty(party);
+            partyRole.setRoleType(roleType);
+            partyRole.setOrganization(org);
+            partyRole.setFromDate(LocalDate.of(2025, 1, 1));
+            partyRoleRepo.save(partyRole);
+
+            // AppUser (auth record — references party_id)
             AppUser user = new AppUser();
             user.setEmail(first.toLowerCase() + "." + last.toLowerCase() + "." + i + "@example.com");
             user.setFirstName(first);
             user.setLastName(last);
             user.setOrganization(org);
+            user.setParty(party);
             user.setStatus("ACTIVE");
             users.add(userRepo.save(user));
 
-            // Assign role: 90% participants, 10% executives
+            // Legacy user_role (kept for backward compat during transition)
             UserRole role = new UserRole();
             role.setUser(user);
-            role.setRoleType(i % 10 == 0 ? executiveRole : participantRole);
+            role.setRoleType(roleType);
             role.setOrganization(org);
             role.setFromDate(LocalDate.of(2025, 1, 1));
             userRoleRepo.save(role);
@@ -224,6 +255,7 @@ public class SyntheticDataService {
 
             Assessment assessment = new Assessment();
             assessment.setUser(user);
+            assessment.setParty(user.getParty());
             assessment.setAssessmentCycle(cycle);
             assessment.setStatus("SCORED");
             assessment.setScoredAt(java.time.Instant.now());
@@ -260,14 +292,36 @@ public class SyntheticDataService {
                                  Organization org, RoleType roleType,
                                  AssessmentCycle cycle, CompetencyFrameworkVersion fv,
                                  List<Competency> competencies, double[] domainBaselines) {
+        // Party + Individual (Silverston UDM)
+        Party party = new Party();
+        party.setPartyType("INDIVIDUAL");
+        party.setDisplayName(firstName + " " + lastName);
+        party = partyRepo.save(party);
+
+        Individual individual = new Individual();
+        individual.setParty(party);
+        individual.setFirstName(firstName);
+        individual.setLastName(lastName);
+        individualRepo.save(individual);
+
+        PartyRole partyRole = new PartyRole();
+        partyRole.setParty(party);
+        partyRole.setRoleType(roleType);
+        partyRole.setOrganization(org);
+        partyRole.setFromDate(LocalDate.of(2025, 1, 1));
+        partyRoleRepo.save(partyRole);
+
+        // AppUser (auth record)
         AppUser user = new AppUser();
         user.setEmail(email);
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setOrganization(org);
+        user.setParty(party);
         user.setStatus("ACTIVE");
         user = userRepo.save(user);
 
+        // Legacy user_role
         UserRole role = new UserRole();
         role.setUser(user);
         role.setRoleType(roleType);
@@ -277,6 +331,7 @@ public class SyntheticDataService {
 
         Assessment assessment = new Assessment();
         assessment.setUser(user);
+        assessment.setParty(party);
         assessment.setAssessmentCycle(cycle);
         assessment.setStatus("SCORED");
         assessment.setScoredAt(java.time.Instant.now());
