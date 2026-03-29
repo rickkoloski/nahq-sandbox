@@ -2,6 +2,7 @@ package com.nahq.accelerate.service;
 
 import com.nahq.accelerate.domain.*;
 import com.nahq.accelerate.repository.*;
+import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +14,7 @@ import java.util.*;
 @Service
 public class SyntheticDataService {
 
+    private final EntityManager em;
     private final OrganizationRepository orgRepo;
     private final AppUserRepository userRepo;
     private final UserRoleRepository userRoleRepo;
@@ -27,12 +29,13 @@ public class SyntheticDataService {
 
     private final Random random = new Random(42); // Deterministic for reproducibility
 
-    public SyntheticDataService(OrganizationRepository orgRepo, AppUserRepository userRepo,
+    public SyntheticDataService(EntityManager em, OrganizationRepository orgRepo, AppUserRepository userRepo,
                                  UserRoleRepository userRoleRepo, RoleTypeRepository roleTypeRepo,
                                  CompetencyRepository competencyRepo, CompetencyDomainRepository domainRepo,
                                  EngagementRepository engagementRepo, AssessmentCycleRepository cycleRepo,
                                  AssessmentRepository assessmentRepo, AssessmentResultRepository resultRepo,
                                  CompetencyFrameworkVersionRepository fvRepo) {
+        this.em = em;
         this.orgRepo = orgRepo;
         this.userRepo = userRepo;
         this.userRoleRepo = userRoleRepo;
@@ -58,20 +61,87 @@ public class SyntheticDataService {
 
         List<Competency> competencies = competencyRepo.findAll();
 
-        // Create organizations
-        String[][] orgs = {
-            {"Tampa General Hospital", "Tampa", "FL"},
-            {"Lifepoint Health System", "Brentwood", "TN"},
-            {"Intermountain Healthcare", "Salt Lake City", "UT"}
+        // Create organizations with Party records (Silverston UDM)
+        // Each health system is a Party(ORGANIZATION) with subsidiary hospital sites
+        String[][][] orgStructure = {
+            { // Tampa General Hospital system
+                {"Tampa General Hospital", "HEALTH_SYSTEM"},
+                {"Regional Medical Center", "HOSPITAL", "Tampa", "FL"},
+                {"Community Hospital", "HOSPITAL", "Brandon", "FL"},
+                {"Specialty Care Hospital", "HOSPITAL", "Clearwater", "FL"},
+            },
+            { // Lifepoint Health System
+                {"Lifepoint Health System", "HEALTH_SYSTEM"},
+                {"Lifepoint Memorial Hospital", "HOSPITAL", "Brentwood", "TN"},
+                {"Lifepoint Regional Medical", "HOSPITAL", "Nashville", "TN"},
+            },
+            { // Intermountain Healthcare
+                {"Intermountain Healthcare", "HEALTH_SYSTEM"},
+                {"Intermountain Medical Center", "HOSPITAL", "Murray", "UT"},
+                {"Primary Children's Hospital", "HOSPITAL", "Salt Lake City", "UT"},
+            }
         };
 
+        // Get subsidiary relationship type
+        Object subRelTypeId = em.createNativeQuery(
+            "SELECT id FROM party_relationship_type WHERE internal_id = 'subsidiary_of'"
+        ).getSingleResult();
+
         List<Organization> organizations = new ArrayList<>();
-        for (String[] orgData : orgs) {
-            Organization org = new Organization();
-            org.setName(orgData[0]);
-            org.setOrgType("HEALTH_SYSTEM");
-            org.setStatus("ACTIVE");
-            organizations.add(orgRepo.save(org));
+        for (String[][] system : orgStructure) {
+            // First entry is the health system (parent org)
+            String[] parentData = system[0];
+
+            // Create Party for health system
+            em.createNativeQuery(
+                "INSERT INTO party (party_type, display_name) VALUES ('ORGANIZATION', :name)"
+            ).setParameter("name", parentData[0]).executeUpdate();
+            Object parentPartyId = em.createNativeQuery("SELECT currval('party_id_seq')").getSingleResult();
+
+            Organization parentOrg = new Organization();
+            parentOrg.setName(parentData[0]);
+            parentOrg.setOrgType(parentData[1]);
+            parentOrg.setStatus("ACTIVE");
+            parentOrg = orgRepo.save(parentOrg);
+            organizations.add(parentOrg);
+
+            // Link org to party
+            em.createNativeQuery("UPDATE organization SET party_id = :partyId WHERE id = :orgId")
+                .setParameter("partyId", parentPartyId).setParameter("orgId", parentOrg.getId()).executeUpdate();
+
+            // Create subsidiary hospital sites as Party + Organization + Relationship
+            for (int s = 1; s < system.length; s++) {
+                String[] siteData = system[s];
+                em.createNativeQuery(
+                    "INSERT INTO party (party_type, display_name) VALUES ('ORGANIZATION', :name)"
+                ).setParameter("name", siteData[0]).executeUpdate();
+                Object sitePartyId = em.createNativeQuery("SELECT currval('party_id_seq')").getSingleResult();
+
+                // Site as organization
+                em.createNativeQuery(
+                    "INSERT INTO organization (name, org_type, status, party_id, created_at, updated_at) " +
+                    "VALUES (:name, 'HOSPITAL', 'ACTIVE', :partyId, NOW(), NOW())"
+                ).setParameter("name", siteData[0]).setParameter("partyId", sitePartyId).executeUpdate();
+
+                // Site entry in site table (for backward compat)
+                em.createNativeQuery(
+                    "INSERT INTO site (organization_id, name, city, state, created_at, updated_at) " +
+                    "VALUES (:orgId, :name, :city, :state, NOW(), NOW())"
+                ).setParameter("orgId", parentOrg.getId())
+                 .setParameter("name", siteData[0])
+                 .setParameter("city", siteData.length > 2 ? siteData[2] : null)
+                 .setParameter("state", siteData.length > 3 ? siteData[3] : null)
+                 .executeUpdate();
+
+                // Party relationship: site SUBSIDIARY_OF parent
+                em.createNativeQuery(
+                    "INSERT INTO party_relationship (relationship_type_id, from_party_id, to_party_id, from_date) " +
+                    "VALUES (:relType, :fromId, :toId, '2025-01-01')"
+                ).setParameter("relType", subRelTypeId)
+                 .setParameter("fromId", sitePartyId)
+                 .setParameter("toId", parentPartyId)
+                 .executeUpdate();
+            }
         }
 
         // Get framework version

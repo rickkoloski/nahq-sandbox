@@ -5,7 +5,7 @@ import { api } from '../api/client'
 import { useAuth } from '../api/auth'
 import { KpiCard } from '../components/KpiCard'
 import { ProgressBar } from '../components/ProgressBar'
-import type { OrgCapabilitySummary, OrgStats } from '../types/api'
+import type { OrgCapabilitySummary, OrgStats, OrgSite } from '../types/api'
 
 const DOMAIN_COLORS = [
   '#003DA5', '#00B5E2', '#8BC53F', '#F68B1F', '#ED1C24', '#6B4C9A', '#99154B', '#00A3E0'
@@ -18,6 +18,7 @@ export function ExecutiveDashboard() {
   const orgId = Number(params.get('orgId') || user?.organizationId || 1)
   const [orgData, setOrgData] = useState<OrgCapabilitySummary | null>(null)
   const [orgStats, setOrgStats] = useState<OrgStats | null>(null)
+  const [sites, setSites] = useState<OrgSite[]>([])
   const [expandedSection, setExpandedSection] = useState<string | null>('participation')
   const [loading, setLoading] = useState(true)
 
@@ -26,8 +27,9 @@ export function ExecutiveDashboard() {
     Promise.all([
       api.orgCapability(orgId),
       api.orgStats(orgId),
-    ]).then(([cap, stats]) => {
-      setOrgData(cap); setOrgStats(stats); setLoading(false)
+      api.orgSites(orgId),
+    ]).then(([cap, stats, s]) => {
+      setOrgData(cap); setOrgStats(stats); setSites(s); setLoading(false)
     }).catch(() => setLoading(false))
   }, [orgId])
 
@@ -73,7 +75,10 @@ export function ExecutiveDashboard() {
             <p className="text-nahq-gray">Workforce capability snapshot &bull; Professional assessment results &bull; Development insights</p>
           </div>
           <select className="border border-gray-200 rounded-md px-3 py-2 text-sm">
-            <option>All Hospitals</option>
+            <option value="all">All Hospitals</option>
+            {sites.map(s => (
+              <option key={s.id} value={s.id}>{s.name}{s.city ? ` — ${s.city}, ${s.state}` : ''}</option>
+            ))}
           </select>
         </div>
 

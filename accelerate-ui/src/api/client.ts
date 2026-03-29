@@ -44,4 +44,5 @@ export const api = {
   aiOrgInsights: (orgId: number) => apiFetch<Record<string, unknown>>(`/api/ai/org-insights/${orgId}`, { method: 'POST' }),
   platformStats: () => apiFetch<T.PlatformStats>('/api/stats/platform'),
   orgStats: (orgId: number) => apiFetch<T.OrgStats>(`/api/organizations/${orgId}/stats`),
+  orgSites: (orgId: number) => apiFetch<T.OrgSite[]>(`/api/organizations/${orgId}/sites`),
 }

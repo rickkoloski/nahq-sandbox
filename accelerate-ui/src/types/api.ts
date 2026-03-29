@@ -112,6 +112,14 @@ export interface PlatformStats {
   competencies: number
 }
 
+export interface OrgSite {
+  id: number
+  name: string
+  orgType: string
+  city: string | null
+  state: string | null
+}
+
 export interface OrgStats {
   totalUsers: number
   assessmentsCompleted: number
