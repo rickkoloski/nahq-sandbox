@@ -7,7 +7,6 @@ import com.nahq.accelerate.dto.OrgCapabilitySummaryDto;
 import com.nahq.accelerate.dto.OrgCapabilitySummaryDto.DomainSummary;
 import com.nahq.accelerate.repository.*;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,19 +14,23 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
 
+/**
+ * Benchmark service. Resolves User → Party for individual lookups.
+ * Org-level queries go directly through materialized views.
+ */
 @Service
 public class BenchmarkService {
 
     private final EntityManager em;
     private final AppUserRepository userRepo;
-    private final UserRoleRepository userRoleRepo;
+    private final PartyRoleRepository partyRoleRepo;
     private final AssessmentResultRepository resultRepo;
 
     public BenchmarkService(EntityManager em, AppUserRepository userRepo,
-                            UserRoleRepository userRoleRepo, AssessmentResultRepository resultRepo) {
+                            PartyRoleRepository partyRoleRepo, AssessmentResultRepository resultRepo) {
         this.em = em;
         this.userRepo = userRepo;
-        this.userRoleRepo = userRoleRepo;
+        this.partyRoleRepo = partyRoleRepo;
         this.resultRepo = resultRepo;
     }
 
@@ -35,21 +38,23 @@ public class BenchmarkService {
     public BenchmarkComparisonDto getUserBenchmarks(Long userId) {
         long start = System.currentTimeMillis();
 
+        // Resolve User → Party
         AppUser user = userRepo.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+        Party party = user.getParty();
 
-        List<UserRole> roles = userRoleRepo.findByUserIdAndThruDateIsNull(userId);
+        List<PartyRole> roles = partyRoleRepo.findByPartyIdAndThruDateIsNull(party.getId());
         String roleName = roles.isEmpty() ? "Unknown" : roles.get(0).getRoleType().getName();
 
-        // Get user's scores
-        List<AssessmentResult> results = resultRepo.findByAssessmentUserId(userId);
+        // Get scores via Party
+        List<AssessmentResult> results = resultRepo.findByAssessmentPartyId(party.getId());
         Map<Long, BigDecimal> scoreByCompetency = new LinkedHashMap<>();
         for (AssessmentResult r : results) {
             scoreByCompetency.merge(r.getCompetency().getId(), r.getScore(),
-                (existing, incoming) -> incoming); // latest wins
+                (existing, incoming) -> incoming);
         }
 
-        // Get national benchmarks from materialized view
+        // National benchmarks from materialized view
         @SuppressWarnings("unchecked")
         List<Object[]> benchmarks = em.createNativeQuery(
             "SELECT competency_id, competency_name, domain_name, " +
@@ -74,26 +79,20 @@ public class BenchmarkService {
             else percentileLabel = "Bottom 25%";
 
             comparisons.add(new CompetencyBenchmark(
-                compId,
-                (String) row[1],
-                (String) row[2],
-                userScore,
-                p25, p50, p75, p90,
-                (BigDecimal) row[3],
-                percentileLabel,
-                ((Number) row[8]).intValue()
+                compId, (String) row[1], (String) row[2],
+                userScore, p25, p50, p75, p90, (BigDecimal) row[3],
+                percentileLabel, ((Number) row[8]).intValue()
             ));
         }
 
         long elapsed = System.currentTimeMillis() - start;
-        return new BenchmarkComparisonDto(userId, user.getFullName(), roleName, comparisons, elapsed);
+        return new BenchmarkComparisonDto(userId, party.getDisplayName(), roleName, comparisons, elapsed);
     }
 
     @Transactional(readOnly = true)
     public OrgCapabilitySummaryDto getOrgCapability(Long orgId) {
         long start = System.currentTimeMillis();
 
-        // Get org domain averages from materialized view
         @SuppressWarnings("unchecked")
         List<Object[]> orgDomains = em.createNativeQuery(
             "SELECT o.domain_id, o.domain_name, o.org_avg_score, o.participant_count, o.organization_name, " +
@@ -127,10 +126,8 @@ public class BenchmarkService {
             else vsNational = "Below National Average (" + diff.setScale(2, RoundingMode.HALF_UP) + ")";
 
             domains.add(new DomainSummary(
-                ((Number) row[0]).longValue(),
-                (String) row[1],
-                orgAvg, nationalP50, nationalMean,
-                participants, vsNational
+                ((Number) row[0]).longValue(), (String) row[1],
+                orgAvg, nationalP50, nationalMean, participants, vsNational
             ));
 
             totalOrgScore = totalOrgScore.add(orgAvg);

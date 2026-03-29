@@ -56,13 +56,14 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
             try {
                 Long userId = Long.parseLong(userIdHeader);
 
-                // Single eager query — no lazy loading issues
+                // Resolve User → Party → PartyRole (Silverston model)
                 @SuppressWarnings("unchecked")
                 List<Object[]> rows = em.createNativeQuery(
                     "SELECT u.email, rt.internal_id " +
                     "FROM app_user u " +
-                    "JOIN user_role ur ON u.id = ur.user_id AND ur.thru_date IS NULL " +
-                    "JOIN role_type rt ON ur.role_type_id = rt.id " +
+                    "JOIN party p ON u.party_id = p.id " +
+                    "JOIN party_role pr ON p.id = pr.party_id AND pr.thru_date IS NULL " +
+                    "JOIN role_type rt ON pr.role_type_id = rt.id " +
                     "WHERE u.id = :userId"
                 ).setParameter("userId", userId).getResultList();
 

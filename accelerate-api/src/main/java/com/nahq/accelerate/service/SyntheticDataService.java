@@ -17,7 +17,6 @@ public class SyntheticDataService {
     private final EntityManager em;
     private final OrganizationRepository orgRepo;
     private final AppUserRepository userRepo;
-    private final UserRoleRepository userRoleRepo;
     private final RoleTypeRepository roleTypeRepo;
     private final CompetencyRepository competencyRepo;
     private final CompetencyDomainRepository domainRepo;
@@ -33,7 +32,7 @@ public class SyntheticDataService {
     private final Random random = new Random(42); // Deterministic for reproducibility
 
     public SyntheticDataService(EntityManager em, OrganizationRepository orgRepo, AppUserRepository userRepo,
-                                 UserRoleRepository userRoleRepo, RoleTypeRepository roleTypeRepo,
+                                 RoleTypeRepository roleTypeRepo,
                                  CompetencyRepository competencyRepo, CompetencyDomainRepository domainRepo,
                                  EngagementRepository engagementRepo, AssessmentCycleRepository cycleRepo,
                                  AssessmentRepository assessmentRepo, AssessmentResultRepository resultRepo,
@@ -43,7 +42,6 @@ public class SyntheticDataService {
         this.em = em;
         this.orgRepo = orgRepo;
         this.userRepo = userRepo;
-        this.userRoleRepo = userRoleRepo;
         this.roleTypeRepo = roleTypeRepo;
         this.competencyRepo = competencyRepo;
         this.domainRepo = domainRepo;
@@ -235,13 +233,6 @@ public class SyntheticDataService {
             user.setStatus("ACTIVE");
             users.add(userRepo.save(user));
 
-            // Legacy user_role (kept for backward compat during transition)
-            UserRole role = new UserRole();
-            role.setUser(user);
-            role.setRoleType(roleType);
-            role.setOrganization(org);
-            role.setFromDate(LocalDate.of(2025, 1, 1));
-            userRoleRepo.save(role);
         }
 
         // Create assessments with realistic score distributions
@@ -320,14 +311,6 @@ public class SyntheticDataService {
         user.setParty(party);
         user.setStatus("ACTIVE");
         user = userRepo.save(user);
-
-        // Legacy user_role
-        UserRole role = new UserRole();
-        role.setUser(user);
-        role.setRoleType(roleType);
-        role.setOrganization(org);
-        role.setFromDate(LocalDate.of(2025, 1, 1));
-        userRoleRepo.save(role);
 
         Assessment assessment = new Assessment();
         assessment.setUser(user);
