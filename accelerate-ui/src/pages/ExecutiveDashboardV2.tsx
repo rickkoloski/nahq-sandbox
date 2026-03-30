@@ -11,6 +11,7 @@ import { Target, ChevronRight, Eye, EyeOff, TrendingUp, AlertTriangle, Users, Ca
 import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../api/auth'
 import { api } from '../api/client'
+import { AiInsightsPanel } from '../components/AiInsightsPanel'
 import type { OrgCapabilitySummary, OrgStats, OrgSite } from '../types/api'
 
 const DOMAIN_COLORS: Record<string, string> = {
@@ -61,7 +62,7 @@ export function ExecutiveDashboardV2() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link to="/" className="flex items-center gap-3">
-              <span className="text-2xl font-bold" style={{ color: '#00A3E0' }}>NAHQ</span>
+              <img src="/images/nahq-logo.png" alt="NAHQ" className="h-10 w-auto" />
               <span className="hidden sm:block text-sm font-semibold text-[#3D3D3D] border-l border-gray-300 pl-3">
                 Accelerate
               </span>
@@ -260,6 +261,15 @@ export function ExecutiveDashboardV2() {
               <span>National Average</span>
             </div>
           </div>
+        </div>
+
+        {/* AI Insights */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6 mt-6">
+          <h2 className="text-lg font-bold text-[#3D3D3D] mb-4">AI Strategic Insights</h2>
+          <AiInsightsPanel
+            title="Generate Organizational Recommendations"
+            onGenerate={() => api.aiOrgInsights(orgId)}
+          />
         </div>
       </div>
     </div>

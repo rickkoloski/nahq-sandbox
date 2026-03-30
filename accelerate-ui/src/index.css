@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 /* NAHQ Design Tokens — extracted from Tim's Base44 prototype */
 :root {

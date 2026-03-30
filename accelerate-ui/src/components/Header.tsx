@@ -24,7 +24,7 @@ export function Header({ variant = 'admin' }: { variant?: 'admin' | 'accelerate'
     <header className="border-b border-gray-200 bg-white sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-          <span className="text-2xl font-bold" style={{ color: 'var(--cyan-primary)' }}>NAHQ</span>
+          <img src="/images/nahq-logo.png" alt="NAHQ" className="h-10 w-auto" />
           <span className="text-sm font-bold text-nahq-charcoal tracking-wider">
             {variant === 'admin' ? 'ADMIN' : 'Accelerate'}
           </span>

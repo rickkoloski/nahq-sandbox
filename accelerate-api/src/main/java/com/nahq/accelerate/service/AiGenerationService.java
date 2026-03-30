@@ -46,7 +46,8 @@ public class AiGenerationService {
             2. Identifies priority development areas with specific, actionable guidance
             3. Contextualizes their performance against national benchmarks
             4. Recommends specific next steps
-            Use professional but warm tone. Reference specific competencies and scores.""";
+            Use professional but warm tone. Reference specific competencies and scores.
+            Format your response in markdown with headers, bold for competency names, and bullet points.""";
 
         return generate("individual_summary", userId, null, systemPrompt, context);
     }
@@ -62,7 +63,8 @@ public class AiGenerationService {
             3. Sequences learning logically (foundational before advanced)
             4. Respects the constraint of max 2 courses per quarter
             5. Includes expected outcomes for each phase
-            Format as a clear timeline with Q1 and Q2 sections.""";
+            Format as a clear timeline with Q1 and Q2 sections.
+            Use markdown with headers (##), bold (**), bullet points, and numbered lists.""";
 
         return generate("upskill_plan", userId, null, systemPrompt, context);
     }
@@ -78,7 +80,8 @@ public class AiGenerationService {
             2. Identify strategic priorities for workforce development
             3. Recommend specific interventions (training programs, mentoring, etc.)
             4. Frame recommendations in terms of patient outcomes and organizational goals
-            Use executive-appropriate language. Be specific about which domains need attention.""";
+            Use executive-appropriate language. Be specific about which domains need attention.
+            Format your response in markdown with headers (##), bold (**), and bullet points.""";
 
         return generate("org_insights", null, orgId, systemPrompt, context);
     }

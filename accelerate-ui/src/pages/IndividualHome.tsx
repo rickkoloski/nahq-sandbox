@@ -74,7 +74,7 @@ export function IndividualHome() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link to="/" className="flex items-center gap-3">
-              <span className="text-2xl font-bold" style={{ color: '#00A3E0' }}>NAHQ</span>
+              <img src="/images/nahq-logo.png" alt="NAHQ" className="h-10 w-auto" />
               <span className="hidden sm:block text-sm font-semibold text-[#3D3D3D] border-l border-gray-300 pl-3">
                 Accelerate
               </span>
@@ -117,19 +117,15 @@ export function IndividualHome() {
           style={{ background: 'linear-gradient(135deg, #009FE8 0%, #414042 100%)' }}
         >
           {/* Abstract background shapes — Tim's SVG */}
-          <svg aria-hidden="true" className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-            <circle cx="85%" cy="-10%" r="220" fill="rgba(255,255,255,0.08)" />
-            <circle cx="70%" cy="120%" r="180" fill="rgba(255,255,255,0.06)" />
-            <circle cx="5%" cy="80%" r="140" fill="rgba(255,255,255,0.05)" />
-            <ellipse cx="55%" cy="50%" rx="300" ry="120" fill="rgba(255,255,255,0.04)" transform="rotate(-20 55% 50%)" />
-            <polygon points="80%,0 100%,0 100%,60%" fill="rgba(255,255,255,0.05)" />
-            <polygon points="0,100% 30%,100% 0,40%" fill="rgba(255,255,255,0.08)" />
-          </svg>
+          {/* Decorative background shapes — CSS positioned to avoid SVG % warnings */}
+          <div className="absolute top-[-10%] right-[5%] w-[440px] h-[440px] rounded-full bg-white/[0.08]" />
+          <div className="absolute bottom-[-20%] left-[60%] w-[360px] h-[360px] rounded-full bg-white/[0.06]" />
+          <div className="absolute top-[30%] left-[2%] w-[280px] h-[280px] rounded-full bg-white/[0.05]" />
 
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 px-10 py-10">
             {/* Left: text */}
             <div className="flex-1">
-              <div className="text-2xl font-bold text-white mb-5">NAHQ<sup className="text-xs">®</sup></div>
+              <img src="/images/nahq-logo.png" alt="NAHQ" className="h-8 w-auto mb-5" />
               <h2 className="text-3xl font-bold text-white leading-tight mb-3">
                 Your Workforce<br />Accelerator Journey
               </h2>

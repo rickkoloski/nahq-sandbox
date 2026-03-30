@@ -45,7 +45,7 @@ export function ExecutiveDashboard() {
       <header className="border-b border-gray-200 bg-white sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-2xl font-bold" style={{ color: 'var(--cyan-primary)' }}>NAHQ</span>
+            <img src="/images/nahq-logo.png" alt="NAHQ" className="h-10 w-auto" />
             <span className="text-sm font-medium text-nahq-charcoal">Accelerate</span>
           </div>
           <div className="flex items-center gap-4">
