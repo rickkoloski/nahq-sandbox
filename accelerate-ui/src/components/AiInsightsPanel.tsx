@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Sparkles, X, Loader2, ChevronDown, ChevronUp } from 'lucide-react'
+import { Sparkles, X, Loader2, ChevronDown, ChevronUp, Copy, Check } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkBreaks from 'remark-breaks'
@@ -16,6 +16,7 @@ export function AiInsightsPanel({ title, onGenerate, className = '' }: AiInsight
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<Record<string, unknown> | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
 
   const handleGenerate = async () => {
     setLoading(true)
@@ -80,8 +81,21 @@ export function AiInsightsPanel({ title, onGenerate, className = '' }: AiInsight
               {open ? <ChevronUp className="w-4 h-4 text-gray-400 ml-2" /> : <ChevronDown className="w-4 h-4 text-gray-400 ml-2" />}
             </div>
             <button
-              onClick={() => { setResult(null); setOpen(false) }}
-              className="text-gray-400 hover:text-gray-600 p-1 ml-2"
+              onClick={() => {
+                navigator.clipboard.writeText(response).then(() => {
+                  setCopied(true)
+                  setTimeout(() => setCopied(false), 2000)
+                })
+              }}
+              className="text-gray-400 hover:text-[#00A3E0] p-1 ml-2 transition-colors"
+              title="Copy to clipboard"
+            >
+              {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+            </button>
+            <button
+              onClick={() => { setResult(null); setOpen(false); setCopied(false) }}
+              className="text-gray-400 hover:text-gray-600 p-1"
+              title="Dismiss"
             >
               <X className="w-3.5 h-3.5" />
             </button>
