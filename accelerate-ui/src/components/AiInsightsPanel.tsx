@@ -8,13 +8,15 @@ import remarkBreaks from 'remark-breaks'
 interface AiInsightsPanelProps {
   title: string
   onGenerate: () => Promise<Record<string, unknown>>
+  initialResult?: Record<string, unknown> | null
+  defaultOpen?: boolean
   className?: string
 }
 
-export function AiInsightsPanel({ title, onGenerate, className = '' }: AiInsightsPanelProps) {
-  const [open, setOpen] = useState(false)
+export function AiInsightsPanel({ title, onGenerate, initialResult = null, defaultOpen = false, className = '' }: AiInsightsPanelProps) {
+  const [open, setOpen] = useState(defaultOpen)
   const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<Record<string, unknown> | null>(null)
+  const [result, setResult] = useState<Record<string, unknown> | null>(initialResult)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
