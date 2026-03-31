@@ -5,7 +5,6 @@
  * Replaced: createPageUrl → React Router paths, @/utils → local imports, userName → auth context
  * Removed: Base44 SDK dependency, AssessmentIntroModal (not yet implemented)
  */
-import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Clock, Globe, ClipboardList, BarChart3 } from 'lucide-react'
