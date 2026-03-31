@@ -14,7 +14,7 @@ import { Target, TrendingUp, Award, Users, Info } from 'lucide-react'
 import { api } from '../api/client'
 import { useAuth } from '../api/auth'
 import { Header } from '../components/Header'
-import { AiInsightsPanel } from '../components/AiInsightsPanel'
+import { AiInsightsModal } from '../components/AiInsightsModal'
 import { BellCurveChart } from '../components/individual/BellCurveChart'
 import { DomainBreakdownCard } from '../components/individual/DomainBreakdownCard'
 import { UpskillPlanSidebar } from '../components/individual/UpskillPlanSidebar'
@@ -188,6 +188,22 @@ export function IndividualDashboard() {
                 </span>
               </div>
             </div>
+            <AiInsightsModal
+              generations={[
+                {
+                  label: 'Assessment Summary',
+                  description: 'Personalized analysis of your competency scores, strengths, and growth areas',
+                  onGenerate: () => api.aiSummary(userId),
+                  initialResult: previousGenerations['individual_summary'] || null,
+                },
+                {
+                  label: 'Upskill Plan',
+                  description: 'Custom learning plan targeting your highest-impact competency gaps',
+                  onGenerate: () => api.aiUpskillPlan(userId),
+                  initialResult: previousGenerations['upskill_plan'] || null,
+                },
+              ]}
+            />
           </div>
         </div>
       </div>
@@ -318,15 +334,6 @@ export function IndividualDashboard() {
               </section>
             </motion.div>
 
-            {/* AI Summary */}
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, delay: 0.08 }}>
-              <AiInsightsPanel
-                title={previousGenerations['individual_summary'] ? 'AI Assessment Summary' : 'Generate AI Assessment Summary'}
-                onGenerate={() => api.aiSummary(userId)}
-                initialResult={previousGenerations['individual_summary'] || null}
-                defaultOpen={!!previousGenerations['individual_summary']}
-              />
-            </motion.div>
           </div>
 
           {/* RIGHT COLUMN */}
@@ -350,15 +357,6 @@ export function IndividualDashboard() {
           </div>
         </motion.div>
 
-        {/* AI Upskill Plan */}
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, delay: 0.12 }}>
-          <AiInsightsPanel
-            title={previousGenerations['upskill_plan'] ? 'Your AI Upskill Plan' : 'Generate AI Upskill Plan'}
-            onGenerate={() => api.aiUpskillPlan(userId)}
-            initialResult={previousGenerations['upskill_plan'] || null}
-            defaultOpen={false}
-          />
-        </motion.div>
       </main>
     </div>
   )

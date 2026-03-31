@@ -11,8 +11,8 @@ import { Target, ChevronRight, Eye, EyeOff, TrendingUp, AlertTriangle, Users, Ca
 import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../api/auth'
 import { api } from '../api/client'
-import { AiInsightsPanel } from '../components/AiInsightsPanel'
 import { Header } from '../components/Header'
+import { AiInsightsModal } from '../components/AiInsightsModal'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../components/ui/Select'
 import type { OrgCapabilitySummary, OrgStats, OrgSite, CompetencyMatrix } from '../types/api'
 
@@ -138,14 +138,23 @@ export function ExecutiveDashboardV2() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* KPI Toggle — Tim's pattern */}
-        <div className="flex justify-end mb-4">
+        {/* Toolbar — KPI toggle + AI Insights */}
+        <div className="flex justify-end gap-2 mb-4">
           <button
             onClick={() => setShowKpiMetrics(!showKpiMetrics)}
             className="flex items-center gap-1.5 text-xs font-medium text-gray-600 hover:text-[#00A3E0] transition-colors px-3 py-1.5 border border-gray-200 rounded-lg hover:border-[#00A3E0]"
           >
             {showKpiMetrics ? <><Eye className="w-3.5 h-3.5" />Hide KPI Metrics</> : <><EyeOff className="w-3.5 h-3.5" />Show KPI Metrics</>}
           </button>
+          <AiInsightsModal
+            generations={[
+              {
+                label: 'Organizational Recommendations',
+                description: 'AI-powered strategic analysis of workforce capabilities and development priorities',
+                onGenerate: () => api.aiOrgInsights(orgId),
+              },
+            ]}
+          />
         </div>
 
         {/* Strategic Summary Bar — KPI cards, Tim's layout wired to live data */}
@@ -286,14 +295,6 @@ export function ExecutiveDashboardV2() {
           </div>
         </div>
 
-        {/* AI Insights */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 mt-6">
-          <h2 className="text-lg font-bold text-[#3D3D3D] mb-4">AI Strategic Insights</h2>
-          <AiInsightsPanel
-            title="Generate Organizational Recommendations"
-            onGenerate={() => api.aiOrgInsights(orgId)}
-          />
-        </div>
       </div>
     </div>
   )
