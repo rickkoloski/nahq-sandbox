@@ -242,7 +242,7 @@ export function AiInsightsModal({ generations, onAsk }: AiInsightsModalProps) {
                 </div>
 
                 <div className="px-3 pb-4 max-h-64 overflow-y-auto">
-                  {filteredGenerations.map((g, i) => {
+                  {filteredGenerations.map((g) => {
                     const originalIndex = generations.indexOf(g)
                     const hasResult = !!results[originalIndex]
                     return (
