@@ -17,6 +17,7 @@ import { Header } from '../components/Header'
 import { AiInsightsModal } from '../components/AiInsightsModal'
 import { BellCurveChart } from '../components/individual/BellCurveChart'
 import { DomainBreakdownCard } from '../components/individual/DomainBreakdownCard'
+import { DomainRadarChart } from '../components/individual/DomainRadarChart'
 import { UpskillPlanSidebar } from '../components/individual/UpskillPlanSidebar'
 import { levelLabel, levelColor } from '../components/individual/domainConfig'
 import type { DomainBreakdownData } from '../components/individual/DomainBreakdownCard'
@@ -334,8 +335,21 @@ export function IndividualDashboard() {
           </aside>
         </div>
 
-        {/* Domain Breakdown */}
+        {/* Domain Radar Chart */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, delay: 0.1 }}>
+          <section className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="px-6 py-5 border-b border-gray-100">
+              <h2 className="text-sm font-bold text-[#00A3E0] uppercase tracking-wide">Domain Profile</h2>
+              <p className="text-xs text-gray-600 mt-0.5">Your scores vs NAHQ role targets across all domains</p>
+            </div>
+            <div className="p-4">
+              <DomainRadarChart domains={domainScores} />
+            </div>
+          </section>
+        </motion.div>
+
+        {/* Domain Breakdown */}
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, delay: 0.12 }}>
           <div className="flex items-center justify-between mb-3">
             <div>
               <h2 className="text-sm font-bold text-[#3D3D3D] uppercase tracking-wide">Explore Your Domains</h2>

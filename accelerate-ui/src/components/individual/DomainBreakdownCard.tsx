@@ -3,6 +3,7 @@
  * Domain summary card with bullet chart showing score vs role target.
  * Adapted to use API data shapes instead of mock data.
  */
+import { Link } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
 import { getDomainConfig } from './domainConfig'
 import type { LucideIcon } from 'lucide-react'
@@ -28,9 +29,10 @@ export function DomainBreakdownCard({ domain }: { domain: DomainBreakdownData })
   const distColor = distToNahq < 0 ? '#DC2626' : '#059669'
 
   return (
-    <div
+    <Link
+      to={`/domain-detail?domain=${encodeURIComponent(domainName)}`}
       aria-label={`${domainName} domain — average score ${avgLevel.toFixed(2)}, ${belowTarget} of ${totalComps} competencies below target.`}
-      className="block group"
+      className="block group no-underline"
     >
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 hover:shadow-md transition-shadow h-full">
         {/* Header */}
@@ -119,6 +121,6 @@ export function DomainBreakdownCard({ domain }: { domain: DomainBreakdownData })
         </div>
         <div className="h-4" />
       </div>
-    </div>
+    </Link>
   )
 }
