@@ -100,7 +100,7 @@ export function Login() {
       {/* Right side — branding panel (matching Tim's login design) */}
       <div className="hidden lg:flex flex-1 items-center justify-center p-8 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #00A3E0 0%, #0077B6 100%)' }}>
         <div className="text-center text-white relative z-10">
-          <div className="text-4xl font-bold mb-4">NAHQ<sup className="text-lg">®</sup></div>
+          <img src="/images/nahq-logo.png" alt="NAHQ" className="h-14 w-auto mx-auto mb-4" />
           <p className="text-sm tracking-wider opacity-80 mb-8">National Association for Healthcare Quality</p>
 
           <div className="bg-white/10 backdrop-blur rounded-xl p-6 text-left max-w-xs mx-auto">

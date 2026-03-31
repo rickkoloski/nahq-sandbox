@@ -27,7 +27,7 @@ export function Home() {
         {/* Hero */}
         <div className="rounded-2xl p-10 mb-10 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #E6F6FC 0%, #C5D7DD 100%)' }}>
           <div className="relative z-10">
-            <div className="text-2xl font-bold mb-1" style={{ color: 'var(--cyan-primary)' }}>NAHQ</div>
+            <img src="/images/nahq-logo.png" alt="NAHQ" className="h-10 w-auto mb-1" />
             <h1 className="text-4xl font-light text-nahq-charcoal mb-2">
               Workforce Accelerator<br />Governance Portal
             </h1>

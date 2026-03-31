@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { useSearchParams, useNavigate } from 'react-router-dom'
+import { useSearchParams, useNavigate, Link } from 'react-router-dom'
 import { LogOut } from 'lucide-react'
 import { api } from '../api/client'
 import { useAuth } from '../api/auth'
 import { KpiCard } from '../components/KpiCard'
+import { AiInsightsPanel } from '../components/AiInsightsPanel'
 import type { GapAnalysis, BenchmarkComparison, CourseSimilarity } from '../types/api'
 
 const DOMAIN_COLORS: Record<string, string> = {
@@ -25,6 +26,7 @@ export function UserDashboard() {
   const [gaps, setGaps] = useState<GapAnalysis | null>(null)
   const [benchmarks, setBenchmarks] = useState<BenchmarkComparison | null>(null)
   const [courses, setCourses] = useState<CourseSimilarity | null>(null)
+  const [previousGenerations, setPreviousGenerations] = useState<Record<string, Record<string, unknown>>>({})
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -33,8 +35,16 @@ export function UserDashboard() {
       api.userGaps(userId),
       api.userBenchmarks(userId),
       api.userCourses(userId),
-    ]).then(([g, b, c]) => {
-      setGaps(g); setBenchmarks(b); setCourses(c); setLoading(false)
+      api.aiGenerations(userId).catch(() => []),
+    ]).then(([g, b, c, gens]) => {
+      setGaps(g); setBenchmarks(b); setCourses(c)
+      // Index generations by type for quick lookup
+      const genMap: Record<string, Record<string, unknown>> = {}
+      for (const gen of gens) {
+        genMap[gen.generationType as string] = { mode: 'live', response: gen.response, model: gen.model, inputTokens: gen.inputTokens, outputTokens: gen.outputTokens, latencyMs: gen.latencyMs }
+      }
+      setPreviousGenerations(genMap)
+      setLoading(false)
     }).catch(() => setLoading(false))
   }, [userId])
 
@@ -48,14 +58,16 @@ export function UserDashboard() {
     <div className="min-h-screen bg-white">
       <header className="border-b border-gray-200 bg-white sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl font-bold" style={{ color: 'var(--cyan-primary)' }}>NAHQ</span>
+          <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+            <img src="/images/nahq-logo.png" alt="NAHQ" className="h-10 w-auto" />
             <span className="text-sm font-medium text-nahq-charcoal">Accelerate</span>
+          </Link>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-nahq-gray">{gaps.userName}</span>
+            <button onClick={() => { logout(); navigate('/login') }} className="text-nahq-gray hover:text-nahq-charcoal">
+              <LogOut size={16} />
+            </button>
           </div>
-          <span className="text-sm text-nahq-gray">{gaps.userName}</span>
-          <button onClick={() => { logout(); navigate('/login') }} className="text-nahq-gray hover:text-nahq-charcoal">
-            <LogOut size={16} />
-          </button>
         </div>
       </header>
 
@@ -139,7 +151,22 @@ export function UserDashboard() {
         {/* Recommended Courses */}
         {courses && courses.courses.length > 0 && (
           <div className="mt-8">
-            <h2 className="text-lg font-semibold text-nahq-charcoal mb-4">Recommended Courses</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-nahq-charcoal">Recommended Courses</h2>
+              {previousGenerations['upskill_plan'] ? (
+                <a
+                  href="#ai-insights"
+                  className="flex items-center gap-1.5 text-sm font-medium text-[#00A3E0] hover:text-[#0077B6] transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                  </svg>
+                  View Your Personalized Plan
+                </a>
+              ) : (
+                <span className="text-xs text-nahq-gray">Based on your top competency gaps</span>
+              )}
+            </div>
             <div className="grid grid-cols-2 gap-4">
               {courses.courses.slice(0, 6).map(c => (
                 <div key={c.courseId} className="border border-gray-200 rounded-lg p-4 hover:border-cyan transition-colors">
@@ -159,6 +186,25 @@ export function UserDashboard() {
             </div>
           </div>
         )}
+
+        {/* AI Insights */}
+        <div className="mt-8" id="ai-insights">
+          <h2 className="text-lg font-semibold text-nahq-charcoal mb-4">AI Insights</h2>
+          <div className="space-y-3">
+            <AiInsightsPanel
+              title={previousGenerations['individual_summary'] ? 'Assessment Summary' : 'Generate Assessment Summary'}
+              onGenerate={() => api.aiSummary(userId)}
+              initialResult={previousGenerations['individual_summary'] || null}
+              defaultOpen={false}
+            />
+            <AiInsightsPanel
+              title={previousGenerations['upskill_plan'] ? 'Your Personalized Upskill Plan' : 'Generate Upskill Plan'}
+              onGenerate={() => api.aiUpskillPlan(userId)}
+              initialResult={previousGenerations['upskill_plan'] || null}
+              defaultOpen={false}
+            />
+          </div>
+        </div>
       </main>
     </div>
   )

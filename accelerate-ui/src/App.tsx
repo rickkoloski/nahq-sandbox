@@ -4,6 +4,8 @@ import { Login } from './pages/Login'
 import { Home } from './pages/Home'
 import { ExecutiveDashboard } from './pages/ExecutiveDashboard'
 import { UserDashboard } from './pages/UserDashboard'
+import { IndividualHome } from './pages/IndividualHome'
+import { ExecutiveDashboardV2 } from './pages/ExecutiveDashboardV2'
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode, allowedRoles?: string[] }) {
   const { user, loading } = useAuth()
@@ -23,9 +25,9 @@ function RoleBasedHome() {
     case 'admin':
       return <Home />
     case 'executive':
-      return <ExecutiveDashboard />
+      return <ExecutiveDashboardV2 />
     case 'participant':
-      return <UserDashboard />
+      return <IndividualHome />
     default:
       return <Home />
   }
@@ -39,7 +41,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<ProtectedRoute><RoleBasedHome /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><Home /></ProtectedRoute>} />
-          <Route path="/executive-dashboard" element={<ProtectedRoute allowedRoles={['admin', 'executive']}><ExecutiveDashboard /></ProtectedRoute>} />
+          <Route path="/executive-dashboard" element={<ProtectedRoute allowedRoles={['admin', 'executive']}><ExecutiveDashboardV2 /></ProtectedRoute>} />
           <Route path="/user-dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
