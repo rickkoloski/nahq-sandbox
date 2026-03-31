@@ -183,6 +183,9 @@ public class SyntheticDataService {
         createDemoUser("michael.reeves@tgh.org", "Michael", "Reeves", tgh, executiveRole,
             cycleByOrg.get(tgh.getId()), fv, competencies,
             new double[]{1.5, 2.2, 1.1, 1.6, 2.0, 2.4, 1.0, 1.9});
+        createDemoUser("jordan.taylor@tgh.org", "Jordan", "Taylor", tgh, participantRole,
+            cycleByOrg.get(tgh.getId()), fv, competencies,
+            new double[]{1.2, 1.8, 0.9, 1.3, 1.5, 2.0, 0.8, 1.4});
 
         // Create users distributed across orgs
         String[] firstNames = {"Sarah", "Michael", "Jennifer", "David", "Lisa", "James", "Maria",
