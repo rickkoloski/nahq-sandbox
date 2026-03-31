@@ -7,6 +7,7 @@ export interface AuthUser {
   lastName: string
   organizationName: string | null
   organizationId: number | null
+  healthSystemOrgId: number | null
   roles: string[]
   primaryRole: string
 }

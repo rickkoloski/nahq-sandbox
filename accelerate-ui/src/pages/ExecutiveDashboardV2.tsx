@@ -8,11 +8,13 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Target, ChevronRight, Eye, EyeOff, TrendingUp, AlertTriangle, Users, Calendar } from 'lucide-react'
-import { Link, useSearchParams, useNavigate } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../api/auth'
 import { api } from '../api/client'
 import { AiInsightsPanel } from '../components/AiInsightsPanel'
-import type { OrgCapabilitySummary, OrgStats, OrgSite } from '../types/api'
+import { Header } from '../components/Header'
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../components/ui/Select'
+import type { OrgCapabilitySummary, OrgStats, OrgSite, CompetencyMatrix } from '../types/api'
 
 const DOMAIN_COLORS: Record<string, string> = {
   'Quality Leadership and Integration': '#003DA5',
@@ -27,58 +29,76 @@ const DOMAIN_COLORS: Record<string, string> = {
 
 export function ExecutiveDashboardV2() {
   const [params] = useSearchParams()
-  const { user, logout } = useAuth()
-  const navigate = useNavigate()
-  const orgId = Number(params.get('orgId') || user?.organizationId || 1)
+  const { user } = useAuth()
+  // Use the health system org (top of hierarchy) for system-wide dashboards.
+  // The auth response resolves this via OrganizationHierarchyService — no waterfall needed.
+  const orgId = Number(params.get('orgId') || user?.healthSystemOrgId || user?.organizationId || 1)
 
   const [orgData, setOrgData] = useState<OrgCapabilitySummary | null>(null)
   const [orgStats, setOrgStats] = useState<OrgStats | null>(null)
   const [sites, setSites] = useState<OrgSite[]>([])
+  const [siteMatrix, setSiteMatrix] = useState<CompetencyMatrix | null>(null)
   const [selectedHospital, setSelectedHospital] = useState('all')
   const [showKpiMetrics, setShowKpiMetrics] = useState(true)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     setLoading(true)
+    // All four calls in parallel — backend handles hierarchy aggregation transparently.
     Promise.all([
       api.orgCapability(orgId),
       api.orgStats(orgId),
       api.orgSites(orgId),
-    ]).then(([cap, stats, s]) => {
-      setOrgData(cap); setOrgStats(stats); setSites(s); setLoading(false)
+      api.competencyMatrix(orgId, 'site'),
+    ]).then(([cap, stats, s, matrix]) => {
+      setOrgData(cap); setOrgStats(stats); setSites(s); setSiteMatrix(matrix); setLoading(false)
     }).catch(() => setLoading(false))
   }, [orgId])
+
+  // When a hospital is selected, derive domain data from the matrix
+  const filteredDomains = (() => {
+    if (selectedHospital === 'all' || !siteMatrix) {
+      return orgData?.domains ?? []
+    }
+    const siteGroup = siteMatrix.groups.find(g => String(g.id) === selectedHospital)
+    if (!siteGroup) return orgData?.domains ?? []
+    // Map matrix domains to the OrgCapabilitySummary domain shape
+    return siteGroup.domains.map((d, i) => {
+      const orgDomain = orgData?.domains.find(od => od.domainName === d.domainName)
+      return {
+        domainId: orgDomain?.domainId ?? i,
+        domainName: d.domainName,
+        orgAvgScore: d.avgScore,
+        nationalP50: orgDomain?.nationalP50 ?? 0,
+        nationalMean: orgDomain?.nationalMean ?? 0,
+        participantCount: siteGroup.participantCount,
+        vsNational: d.avgScore >= (orgDomain?.nationalMean ?? 0)
+          ? `Above National Average (+${(d.avgScore - (orgDomain?.nationalMean ?? 0)).toFixed(2)})`
+          : `Below National Average (${(d.avgScore - (orgDomain?.nationalMean ?? 0)).toFixed(2)})`,
+      }
+    })
+  })()
+
+  const filteredParticipants = selectedHospital === 'all'
+    ? orgData?.totalParticipants ?? 0
+    : siteMatrix?.groups.find(g => String(g.id) === selectedHospital)?.participantCount ?? 0
+
+  const filteredOrgName = selectedHospital === 'all'
+    ? orgData?.organizationName ?? ''
+    : sites.find(s => String(s.id) === selectedHospital)?.name ?? orgData?.organizationName ?? ''
 
   if (loading) return <div className="min-h-screen bg-[#F8F9FB] flex items-center justify-center text-gray-500">Loading dashboard...</div>
   if (!orgData || !orgStats) return <div className="min-h-screen bg-[#F8F9FB] flex items-center justify-center text-red-500">Failed to load data</div>
 
-  const gapVsNational = orgData.overallOrgAvg - orgData.overallNationalAvg
-  const domainsBelow = orgData.domains.filter(d => d.orgAvgScore < d.nationalMean)
+  const filteredOverallAvg = filteredDomains.length > 0
+    ? filteredDomains.reduce((s, d) => s + d.orgAvgScore, 0) / filteredDomains.length
+    : orgData.overallOrgAvg
+  const gapVsNational = filteredOverallAvg - orgData.overallNationalAvg
+  const domainsBelow = filteredDomains.filter(d => d.orgAvgScore < d.nationalMean)
 
   return (
     <div className="min-h-screen bg-[#F8F9FB]">
-      {/* Header — Tim's pattern */}
-      <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Link to="/" className="flex items-center gap-3">
-              <img src="/images/nahq-logo.png" alt="NAHQ" className="h-10 w-auto" />
-              <span className="hidden sm:block text-sm font-semibold text-[#3D3D3D] border-l border-gray-300 pl-3">
-                Accelerate
-              </span>
-            </Link>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-[#00A3E0]/10 flex items-center justify-center">
-                <span className="text-sm font-medium text-[#00A3E0]">{user?.firstName?.[0]}</span>
-              </div>
-              <span className="hidden sm:block font-medium text-sm text-gray-700">{user?.firstName}</span>
-              <button onClick={() => { logout(); navigate('/login') }} className="ml-2 text-gray-400 hover:text-gray-600 text-sm">
-                Sign Out
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Page Header — Tim's breadcrumb + title + tab pattern */}
       <div className="bg-white border-b border-gray-200">
@@ -94,16 +114,17 @@ export function ExecutiveDashboardV2() {
               <h1 className="text-xl font-bold text-[#3D3D3D]">Organizational Dashboard</h1>
               <p className="text-xs text-gray-600 mt-0.5">Workforce capability · Assessment results · Development insights</p>
             </div>
-            <select
-              value={selectedHospital}
-              onChange={e => setSelectedHospital(e.target.value)}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
-            >
-              <option value="all">All Hospitals</option>
-              {sites.map(s => (
-                <option key={s.id} value={s.id}>{s.name}</option>
-              ))}
-            </select>
+            <Select value={selectedHospital} onValueChange={setSelectedHospital}>
+              <SelectTrigger className="w-[220px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Hospitals</SelectItem>
+                {sites.map(s => (
+                  <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Tab Navigation — Tim's pattern */}
@@ -159,9 +180,9 @@ export function ExecutiveDashboardV2() {
                   </div>
                   <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Organizational Score</span>
                 </div>
-                <p className="text-3xl font-bold text-[#3D3D3D]">{orgData.overallOrgAvg.toFixed(2)}</p>
+                <p className="text-3xl font-bold text-[#3D3D3D]">{filteredOverallAvg.toFixed(2)}</p>
                 <p className="text-xs text-gray-500 mt-1">
-                  {orgData.overallOrgAvg >= 3.5 ? 'Advanced level' : orgData.overallOrgAvg >= 2.5 ? 'Proficient level' : 'Foundational level'}
+                  {filteredOverallAvg >= 3.5 ? 'Advanced level' : filteredOverallAvg >= 2.5 ? 'Proficient level' : 'Foundational level'}
                 </p>
               </div>
 
@@ -207,14 +228,16 @@ export function ExecutiveDashboardV2() {
             <div>
               <h2 className="text-lg font-bold text-[#3D3D3D]">Domain Performance</h2>
               <p className="text-xs text-gray-500 mt-0.5">
-                {orgData.totalParticipants} participants assessed · {domainsBelow.length === 0 ? 'All domains at or above national average' : `${domainsBelow.length} domain${domainsBelow.length > 1 ? 's' : ''} below national average`}
+                {filteredParticipants} participants assessed{selectedHospital !== 'all' ? ` at ${filteredOrgName}` : ''} · {domainsBelow.length === 0 ? 'All domains at or above national average' : `${domainsBelow.length} domain${domainsBelow.length > 1 ? 's' : ''} below national average`}
               </p>
             </div>
-            <span className="text-xs text-gray-400">Query: {orgData.queryTimeMs}ms</span>
+            <span className="text-xs text-gray-400">
+              Query: {selectedHospital === 'all' ? orgData.queryTimeMs : siteMatrix?.queryTimeMs ?? 0}ms
+            </span>
           </div>
 
           <div className="space-y-4">
-            {orgData.domains.map(d => {
+            {filteredDomains.map(d => {
               const color = DOMAIN_COLORS[d.domainName] || '#999'
               const pct = (d.orgAvgScore / 5) * 100
               const natPct = (d.nationalMean / 5) * 100

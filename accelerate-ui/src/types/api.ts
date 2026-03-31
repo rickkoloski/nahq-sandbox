@@ -127,3 +127,22 @@ export interface OrgStats {
   completionPercent: number
   lastAssessmentDate: string | null
 }
+
+export interface CompetencyMatrixDomain {
+  domainName: string
+  avgScore: number
+}
+
+export interface CompetencyMatrixGroup {
+  name: string
+  id: number
+  participantCount: number
+  domains: CompetencyMatrixDomain[]
+}
+
+export interface CompetencyMatrix {
+  organizationId: number
+  groupBy: string
+  groups: CompetencyMatrixGroup[]
+  queryTimeMs: number
+}

@@ -46,4 +46,6 @@ export const api = {
   platformStats: () => apiFetch<T.PlatformStats>('/api/stats/platform'),
   orgStats: (orgId: number) => apiFetch<T.OrgStats>(`/api/organizations/${orgId}/stats`),
   orgSites: (orgId: number) => apiFetch<T.OrgSite[]>(`/api/organizations/${orgId}/sites`),
+  competencyMatrix: (orgId: number, groupBy: 'site' | 'role' = 'site') =>
+    apiFetch<T.CompetencyMatrix>(`/api/organizations/${orgId}/competency-matrix?groupBy=${groupBy}`),
 }

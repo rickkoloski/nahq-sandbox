@@ -9,6 +9,7 @@ public record LoginResponse(
     String lastName,
     String organizationName,
     Long organizationId,
+    Long healthSystemOrgId,
     List<String> roles,
     String primaryRole
 ) {}

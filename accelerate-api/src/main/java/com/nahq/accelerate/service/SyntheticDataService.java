@@ -180,7 +180,7 @@ public class SyntheticDataService {
         createDemoUser("sarah.chen@tgh.org", "Sarah", "Chen", tgh, executiveRole,
             cycleByOrg.get(tgh.getId()), fv, competencies,
             new double[]{3.8, 4.1, 3.2, 3.5, 3.9, 4.3, 3.0, 3.7});
-        createDemoUser("michael.reeves@tgh.org", "Michael", "Reeves", tgh, participantRole,
+        createDemoUser("michael.reeves@tgh.org", "Michael", "Reeves", tgh, executiveRole,
             cycleByOrg.get(tgh.getId()), fv, competencies,
             new double[]{2.5, 3.8, 2.2, 3.0, 3.6, 4.0, 2.0, 3.4});
 

@@ -16,7 +16,8 @@ import java.util.*;
 
 /**
  * Benchmark service. Resolves User → Party for individual lookups.
- * Org-level queries go directly through materialized views.
+ * Org-level queries use OrganizationHierarchyService to transparently
+ * aggregate across the org hierarchy.
  */
 @Service
 public class BenchmarkService {
@@ -25,20 +26,22 @@ public class BenchmarkService {
     private final AppUserRepository userRepo;
     private final PartyRoleRepository partyRoleRepo;
     private final AssessmentResultRepository resultRepo;
+    private final OrganizationHierarchyService hierarchyService;
 
     public BenchmarkService(EntityManager em, AppUserRepository userRepo,
-                            PartyRoleRepository partyRoleRepo, AssessmentResultRepository resultRepo) {
+                            PartyRoleRepository partyRoleRepo, AssessmentResultRepository resultRepo,
+                            OrganizationHierarchyService hierarchyService) {
         this.em = em;
         this.userRepo = userRepo;
         this.partyRoleRepo = partyRoleRepo;
         this.resultRepo = resultRepo;
+        this.hierarchyService = hierarchyService;
     }
 
     @Transactional(readOnly = true)
     public BenchmarkComparisonDto getUserBenchmarks(Long userId) {
         long start = System.currentTimeMillis();
 
-        // Resolve User → Party
         AppUser user = userRepo.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found: " + userId));
         Party party = user.getParty();
@@ -46,7 +49,6 @@ public class BenchmarkService {
         List<PartyRole> roles = partyRoleRepo.findByPartyIdAndThruDateIsNull(party.getId());
         String roleName = roles.isEmpty() ? "Unknown" : roles.get(0).getRoleType().getName();
 
-        // Get scores via Party
         List<AssessmentResult> results = resultRepo.findByAssessmentPartyId(party.getId());
         Map<Long, BigDecimal> scoreByCompetency = new LinkedHashMap<>();
         for (AssessmentResult r : results) {
@@ -54,7 +56,6 @@ public class BenchmarkService {
                 (existing, incoming) -> incoming);
         }
 
-        // National benchmarks from materialized view
         @SuppressWarnings("unchecked")
         List<Object[]> benchmarks = em.createNativeQuery(
             "SELECT competency_id, competency_name, domain_name, " +
@@ -89,25 +90,40 @@ public class BenchmarkService {
         return new BenchmarkComparisonDto(userId, party.getDisplayName(), roleName, comparisons, elapsed);
     }
 
+    /**
+     * Organization capability summary — aggregates across the org's full scope
+     * (self + subsidiaries) using the hierarchy service.
+     *
+     * Single query: uses org_with_subsidiaries() to include all orgs in the hierarchy,
+     * then aggregates the materialized view data across them.
+     */
     @Transactional(readOnly = true)
     public OrgCapabilitySummaryDto getOrgCapability(Long orgId) {
         long start = System.currentTimeMillis();
 
+        String orgName = hierarchyService.getOrgName(orgId);
+
+        // Single query that aggregates across the full org scope (self + subsidiaries).
+        // Uses the DB function org_with_subsidiaries() via the WHERE clause.
+        // AVG across org_avg_scores gives a weighted-by-domain average across sites.
+        // SUM of participant_count gives total unique participants.
         @SuppressWarnings("unchecked")
         List<Object[]> orgDomains = em.createNativeQuery(
-            "SELECT o.domain_id, o.domain_name, o.org_avg_score, o.participant_count, o.organization_name, " +
+            "SELECT d.domain_id, d.domain_name, " +
+            "CAST(AVG(o.org_avg_score) AS NUMERIC(5,2)) AS org_avg_score, " +
+            "CAST(SUM(o.participant_count) AS INTEGER) AS participant_count, " +
             "d.mean_score AS national_mean, d.p50 AS national_p50 " +
             "FROM mv_org_domain_summary o " +
             "JOIN mv_domain_benchmarks d ON o.domain_id = d.domain_id " +
-            "WHERE o.organization_id = :orgId " +
-            "ORDER BY o.display_order"
+            "WHERE o.organization_id IN (SELECT * FROM org_with_subsidiaries(:orgId)) " +
+            "GROUP BY d.domain_id, d.domain_name, d.mean_score, d.p50, d.display_order " +
+            "ORDER BY d.display_order"
         ).setParameter("orgId", orgId).getResultList();
 
         if (orgDomains.isEmpty()) {
             throw new RuntimeException("Organization not found or has no assessment data: " + orgId);
         }
 
-        String orgName = (String) orgDomains.get(0)[4];
         List<DomainSummary> domains = new ArrayList<>();
         BigDecimal totalOrgScore = BigDecimal.ZERO;
         BigDecimal totalNationalScore = BigDecimal.ZERO;
@@ -115,8 +131,8 @@ public class BenchmarkService {
 
         for (Object[] row : orgDomains) {
             BigDecimal orgAvg = (BigDecimal) row[2];
-            BigDecimal nationalMean = (BigDecimal) row[5];
-            BigDecimal nationalP50 = (BigDecimal) row[6];
+            BigDecimal nationalMean = (BigDecimal) row[4];
+            BigDecimal nationalP50 = (BigDecimal) row[5];
             int participants = ((Number) row[3]).intValue();
 
             BigDecimal diff = orgAvg.subtract(nationalMean);

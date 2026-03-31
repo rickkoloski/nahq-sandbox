@@ -1,6 +1,7 @@
 package com.nahq.accelerate.controller;
 
 import com.nahq.accelerate.dto.LoginResponse;
+import com.nahq.accelerate.service.OrganizationHierarchyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityManager;
@@ -15,15 +16,19 @@ import java.util.*;
 public class AuthController {
 
     private final EntityManager em;
+    private final OrganizationHierarchyService hierarchyService;
 
-    public AuthController(EntityManager em) {
+    public AuthController(EntityManager em, OrganizationHierarchyService hierarchyService) {
         this.em = em;
+        this.hierarchyService = hierarchyService;
     }
 
     @PostMapping("/login")
     @Operation(summary = "Login by email (sandbox mode — no password)",
                description = "Looks up user by email, resolves identity via Party → Individual, " +
-                             "roles via PartyRole, org via PartyRelationship (EMPLOYED_BY).")
+                             "roles via PartyRole, org via PartyRelationship (EMPLOYED_BY). " +
+                             "Includes healthSystemOrgId — the top-level org in the hierarchy, " +
+                             "resolved via the OrganizationHierarchyService decorator.")
     public ResponseEntity<LoginResponse> login(@RequestBody Map<String, String> body) {
         String email = body.get("email");
         if (email == null || email.isBlank()) {
@@ -62,13 +67,17 @@ public class AuthController {
             : roles.contains("participant") ? "participant"
             : "unknown";
 
+        Long directOrgId = first[5] != null ? ((Number) first[5]).longValue() : null;
+        Long healthSystemOrgId = hierarchyService.resolveHealthSystem(directOrgId);
+
         return ResponseEntity.ok(new LoginResponse(
             ((Number) first[0]).longValue(),
             (String) first[1],
             (String) first[2],
             (String) first[3],
             (String) first[4],
-            first[5] != null ? ((Number) first[5]).longValue() : null,
+            directOrgId,
+            healthSystemOrgId,
             roles,
             primaryRole
         ));
