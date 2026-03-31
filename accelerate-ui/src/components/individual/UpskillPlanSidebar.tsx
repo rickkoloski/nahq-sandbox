@@ -3,6 +3,7 @@
  * Personalized upskill plan sidebar showing top recommended courses.
  * Adapted to use API course data instead of mock data.
  */
+import { Link } from 'react-router-dom'
 import { Clock, ArrowRight, CheckCircle2 } from 'lucide-react'
 
 export interface UpskillCourse {
@@ -16,7 +17,6 @@ export interface UpskillCourse {
 
 interface UpskillPlanSidebarProps {
   courses: UpskillCourse[]
-  onViewPlan?: () => void
 }
 
 const DOMAIN_TAG: Record<string, { label: string; color: string }> = {
@@ -31,7 +31,7 @@ const DOMAIN_TAG: Record<string, { label: string; color: string }> = {
   'Quality Review and Accountability':       { label: 'Quality Review',       color: '#99154B' },
 }
 
-export function UpskillPlanSidebar({ courses, onViewPlan }: UpskillPlanSidebarProps) {
+export function UpskillPlanSidebar({ courses }: UpskillPlanSidebarProps) {
   const STATUS_ORDER: Record<string, number> = { in_progress: 0, not_started: 1, complete: 2 }
   const sortedCourses = [...courses]
     .sort((a, b) => (STATUS_ORDER[a.status] ?? 1) - (STATUS_ORDER[b.status] ?? 1))
@@ -104,16 +104,14 @@ export function UpskillPlanSidebar({ courses, onViewPlan }: UpskillPlanSidebarPr
       </ul>
 
       {/* Footer CTA */}
-      {onViewPlan && (
-        <div className="p-4">
-          <button
-            onClick={onViewPlan}
-            className="block w-full text-center text-sm font-bold text-white bg-[#00A3E0] hover:bg-[#0082b3] rounded-xl py-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00A3E0] focus-visible:ring-offset-2"
-          >
-            Go To Your Upskill Plan
-          </button>
-        </div>
-      )}
+      <div className="p-4">
+        <Link
+          to="/upskill-plan"
+          className="block w-full text-center text-sm font-bold text-white bg-[#00A3E0] hover:bg-[#0082b3] rounded-xl py-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00A3E0] focus-visible:ring-offset-2"
+        >
+          Go To Your Upskill Plan
+        </Link>
+      </div>
     </div>
   )
 }
