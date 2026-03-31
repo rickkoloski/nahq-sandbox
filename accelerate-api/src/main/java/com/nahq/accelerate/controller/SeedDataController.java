@@ -71,18 +71,31 @@ public class SeedDataController {
 
     @PostMapping("/redistribute-sites")
     @Operation(summary = "Redistribute individuals across subsidiary sites",
-               description = "Moves all individuals currently employed by the parent org (org_id=1) " +
-                             "and distributes them evenly (round-robin) across its 3 subsidiary site parties. " +
+               description = "Finds the first health system org (one that has subsidiaries) " +
+                             "and distributes its direct employees evenly (round-robin) across its subsidiary sites. " +
                              "Updates both party_relationship.to_party_id and party_role.organization_id. " +
                              "Refreshes materialized views after redistribution.")
     @Transactional
     public Map<String, Object> redistributeSites() {
         long start = System.currentTimeMillis();
 
-        // 1. Get the parent org's party_id (org_id=1)
-        Object parentPartyId = em.createNativeQuery(
-            "SELECT party_id FROM organization WHERE id = 1"
-        ).getSingleResult();
+        // 1. Find the first parent org that has subsidiaries (dynamic, not hardcoded)
+        @SuppressWarnings("unchecked")
+        List<Object[]> parentOrgs = em.createNativeQuery(
+            "SELECT DISTINCT o.id, o.party_id FROM organization o " +
+            "JOIN party p ON o.party_id = p.id " +
+            "JOIN party_relationship pr ON pr.to_party_id = p.id " +
+            "JOIN party_relationship_type prt ON pr.relationship_type_id = prt.id " +
+            "WHERE prt.internal_id = 'subsidiary_of' AND pr.thru_date IS NULL " +
+            "ORDER BY o.id LIMIT 1"
+        ).getResultList();
+
+        if (parentOrgs.isEmpty()) {
+            return Map.of("error", "No parent org with subsidiaries found");
+        }
+
+        Long parentOrgId = ((Number) parentOrgs.get(0)[0]).longValue();
+        Object parentPartyId = parentOrgs.get(0)[1];
 
         // 2. Get the 3 subsidiary party_ids
         @SuppressWarnings("unchecked")
@@ -92,12 +105,12 @@ public class SeedDataController {
             "JOIN party p1 ON pr.to_party_id = p1.id " +
             "JOIN organization o ON o.party_id = p1.id " +
             "JOIN party p2 ON pr.from_party_id = p2.id " +
-            "WHERE o.id = 1 AND prt.internal_id = 'subsidiary_of' AND pr.thru_date IS NULL " +
+            "WHERE o.id = :parentOrgId AND prt.internal_id = 'subsidiary_of' AND pr.thru_date IS NULL " +
             "ORDER BY p2.id"
-        ).getResultList();
+        ).setParameter("parentOrgId", parentOrgId).getResultList();
 
         if (subsidiaryPartyIds.isEmpty()) {
-            return Map.of("error", "No subsidiary sites found for org_id=1");
+            return Map.of("error", "No subsidiary sites found for org " + parentOrgId);
         }
 
         // Build a map of subsidiary party_id → org_id for party_role updates

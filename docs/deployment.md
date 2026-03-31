@@ -91,11 +91,29 @@ sleep 10 && curl -s http://localhost:4003/actuator/health
 
 ### 4. Reseed (if DB was reset)
 
+Full seed process — run all 5 steps in order:
+
 ```bash
-curl -s -H "X-Api-Key: nahq-sandbox-2026" -X POST "http://18.219.171.198/api/seed/generate?userCount=100"
-curl -s -H "X-Api-Key: nahq-sandbox-2026" -X POST "http://18.219.171.198/api/courses/seed"
-curl -s -H "X-Api-Key: nahq-sandbox-2026" -X POST "http://18.219.171.198/api/analytics/refresh"
+HOST=http://18.219.171.198
+KEY="X-Api-Key: nahq-sandbox-2026"
+
+# 1. Generate synthetic data (100 users, 3 health systems, 0-3 scale)
+curl -s -H "$KEY" -X POST "$HOST/api/seed/generate?userCount=100"
+
+# 2. Seed LMS courses
+curl -s -H "$KEY" -X POST "$HOST/api/courses/seed"
+
+# 3. Refresh materialized views
+curl -s -H "$KEY" -X POST "$HOST/api/analytics/refresh"
+
+# 4. Redistribute TGH employees across subsidiary sites
+curl -s -H "$KEY" -X POST "$HOST/api/seed/redistribute-sites"
+
+# 5. Fix Michael Reeves role to executive
+curl -s -H "$KEY" -X POST "$HOST/api/seed/fix-demo-roles"
 ```
+
+**After truncate+reseed:** Admin account and redistribute require SQL (see `docs/demo-accounts.md` for details).
 
 ## One-liner Redeploy Script
 
