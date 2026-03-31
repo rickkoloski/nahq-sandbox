@@ -34,15 +34,9 @@ interface BellCurveChartProps {
   mean?: number
   std?: number
   peerLabel?: string
-  /** Scale minimum (default: auto from mean - 3*std, floored to nearest int) */
-  scaleMin?: number
-  /** Scale maximum (default: auto from mean + 3*std, ceiled to nearest int) */
-  scaleMax?: number
-  /** Maximum score label (e.g., "3.0" or "5.0") */
-  maxScoreLabel?: string
 }
 
-export function BellCurveChart({ userScore = 1.48, mean = 1.75, std = 0.42, peerLabel = 'National Benchmark', scaleMin, scaleMax, maxScoreLabel }: BellCurveChartProps) {
+export function BellCurveChart({ userScore = 1.48, mean = 1.75, std = 0.42, peerLabel = 'National Average' }: BellCurveChartProps) {
   const [tooltip, setTooltip] = useState<{
     x: number; y: number; dataX: number; count: number; pct: number
   } | null>(null)
@@ -53,9 +47,7 @@ export function BellCurveChart({ userScore = 1.48, mean = 1.75, std = 0.42, peer
   const PL = 36, PR = 16, PT = 24, PB = 44
   const chartW = W - PL - PR
   const chartH = H - PT - PB
-  const xMin = scaleMin ?? Math.max(0, Math.floor(mean - 3 * std))
-  const xMax = scaleMax ?? Math.ceil(mean + 3 * std)
-  const steps = 300
+  const xMin = 0, xMax = 3, steps = 300
 
   const points = useMemo(() => {
     const pts: { x: number; y: number }[] = []
@@ -90,20 +82,9 @@ export function BellCurveChart({ userScore = 1.48, mean = 1.75, std = 0.42, peer
   const meanCurveY = toY(maxY)
   const userPct = Math.round(normalCDF(userScore, mean, std) * 100)
 
-  // Generate ticks dynamically based on scale
-  const ticks: number[] = []
-  const tickStep = (xMax - xMin) <= 4 ? 0.5 : 1.0
-  for (let v = xMin; v <= xMax + 0.001; v += tickStep) {
-    ticks.push(parseFloat(v.toFixed(1)))
-  }
+  const ticks = [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0]
 
-  // Level labels at scale thirds
-  const range = xMax - xMin
-  const levelLabels: Record<number, string> = {
-    [parseFloat((xMin + range / 3).toFixed(1))]: 'Foundational',
-    [parseFloat((xMin + range * 2 / 3).toFixed(1))]: 'Proficient',
-    [xMax]: 'Advanced',
-  }
+  const levelLabels: Record<number, string> = { 1.0: 'Foundational', 2.0: 'Proficient', 3.0: 'Advanced' }
 
   const handleMouseMove = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
     const svg = svgRef.current
@@ -134,7 +115,7 @@ export function BellCurveChart({ userScore = 1.48, mean = 1.75, std = 0.42, peer
   const utX = utRight ? userX - 8 - 88 : userX + 8
   const utY = Math.max(PT + 2, userCurveY - 30)
 
-  const srSummary = `Bell curve chart comparing your score to ${peerLabel}. Your score: ${userScore.toFixed(2)} out of ${maxScoreLabel ?? xMax}, placing you at the ${userPct}th percentile. The national benchmark mean is ${mean.toFixed(2)}.`
+  const srSummary = `Bell curve chart comparing your score to ${peerLabel}. Your score: ${userScore.toFixed(2)} out of 3.0, placing you at the ${userPct}th percentile. The national average mean is ${mean.toFixed(2)}.`
 
   return (
     <div className="w-full">
@@ -234,7 +215,7 @@ export function BellCurveChart({ userScore = 1.48, mean = 1.75, std = 0.42, peer
           })}
 
           <text x={PL + chartW / 2} y={H - 1} textAnchor="middle" fontSize="7.5" fill="#6B7280" letterSpacing="0.3">
-            Competency Score ({xMin}-{xMax} scale)
+            Competency Score (0–3 scale)
           </text>
         </svg>
       </div>
@@ -246,7 +227,7 @@ export function BellCurveChart({ userScore = 1.48, mean = 1.75, std = 0.42, peer
         </div>
         <div className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full bg-[#9CA3AF]" />
-          <span className="text-[11px] text-gray-600">National Benchmark</span>
+          <span className="text-[11px] text-gray-600">National Average</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-7 h-3 rounded-sm" style={{ background: 'rgba(0,163,224,0.22)' }} />

@@ -13,17 +13,16 @@ export interface DomainBreakdownData {
   roleTarget: number
   totalComps: number
   belowTarget: number
-  scaleMax?: number
 }
 
 export function DomainBreakdownCard({ domain }: { domain: DomainBreakdownData }) {
-  const { domainName, avgLevel, roleTarget, totalComps, belowTarget, scaleMax = 5 } = domain
+  const { domainName, avgLevel, roleTarget, totalComps, belowTarget } = domain
   const config = getDomainConfig(domainName)
   const Icon: LucideIcon = config.icon
 
   const distToNahq = parseFloat((avgLevel - roleTarget).toFixed(2))
-  const barPct = (avgLevel / scaleMax) * 100
-  const markerPct = (roleTarget / scaleMax) * 100
+  const barPct = (avgLevel / 3) * 100
+  const markerPct = (roleTarget / 3) * 100
 
   const distLabel = distToNahq > 0 ? `+${distToNahq.toFixed(2)}` : distToNahq.toFixed(2)
   const distColor = distToNahq < 0 ? '#DC2626' : '#059669'
@@ -107,7 +106,7 @@ export function DomainBreakdownCard({ domain }: { domain: DomainBreakdownData })
 
         {/* Tick marks */}
         <div aria-hidden="true" className="relative flex justify-between mt-1.5 px-0">
-          {Array.from({ length: scaleMax + 1 }, (_, i) => i).map(v => (
+          {[0, 1, 2, 3].map(v => (
             <span key={v} className="text-[9px] text-gray-500">{v}</span>
           ))}
         </div>

@@ -152,13 +152,7 @@ export function IndividualDashboard() {
 
   const domainScores = buildDomainScores(gaps)
   const upskillCourses = buildCourses(courses)
-  // Determine scale max from the data (highest target or score, rounded up)
-  const scaleMax = Math.ceil(Math.max(
-    ...gaps.gaps.map(g => g.target),
-    ...gaps.gaps.map(g => g.score),
-    gaps.overallTarget,
-  ))
-  const scoreStyle = levelColor(avgScore / scaleMax * 3) // normalize to 0-3 for color
+  const scoreStyle = levelColor(avgScore)
 
   return (
     <div className="min-h-screen bg-[#F8F9FB]">
@@ -259,13 +253,13 @@ export function IndividualDashboard() {
                   </div>
                   <div className="flex items-baseline gap-2 mb-2">
                     <p className="text-2xl font-bold text-[#3D3D3D] leading-none">
-                      {avgScore.toFixed(2)}<span className="text-sm text-gray-500 font-normal"> / {scaleMax}.0</span>
+                      {avgScore.toFixed(2)}<span className="text-sm text-gray-500 font-normal"> / 3.0</span>
                     </p>
                     <span
                       className="text-[10px] font-bold px-2 py-0.5 rounded-full"
                       style={{ backgroundColor: scoreStyle.bg, color: scoreStyle.text }}
                     >
-                      {levelLabel(avgScore / scaleMax * 3)}
+                      {levelLabel(avgScore)}
                     </span>
                   </div>
                   <p className="text-[11px] text-gray-600 leading-snug">Target: {gaps.overallTarget.toFixed(2)}</p>
@@ -294,14 +288,14 @@ export function IndividualDashboard() {
                     <div aria-hidden="true" className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#6B4C9A18' }}>
                       <Users aria-hidden="true" className="w-4 h-4" style={{ color: '#6B4C9A' }} />
                     </div>
-                    <p className="text-[10px] text-gray-600 uppercase tracking-wide font-semibold leading-tight">National Benchmark</p>
+                    <p className="text-[10px] text-gray-600 uppercase tracking-wide font-semibold leading-tight">National Average</p>
                     <div className="ml-auto">
                       <InfoTooltip text="Average overall result of professionals in the national NAHQ dataset." />
                     </div>
                   </div>
                   <div className="flex items-baseline gap-2 mb-1">
                     <p className="text-2xl font-bold text-[#3D3D3D] leading-none">
-                      {nationalMean.toFixed(2)}<span className="text-sm text-gray-500 font-normal"> / {scaleMax}.0</span>
+                      {nationalMean.toFixed(2)}<span className="text-sm text-gray-500 font-normal"> / 3.0</span>
                     </p>
                   </div>
                   <p className="text-[11px] text-gray-600 mb-2">National average</p>
@@ -315,7 +309,7 @@ export function IndividualDashboard() {
                 <div className="px-6 py-5 border-b border-gray-100">
                   <div className="flex items-center justify-between">
                     <h2 id="benchmark-heading" className="text-sm font-bold text-[#00A3E0] uppercase tracking-wide">
-                      National Benchmark Comparison
+                      National Average Comparison
                     </h2>
                     <InfoTooltip text="This benchmark represents the typical level of work observed across NAHQ's national dataset." />
                   </div>
@@ -326,10 +320,7 @@ export function IndividualDashboard() {
                     userScore={avgScore}
                     mean={nationalMean}
                     std={estimatedStd}
-                    peerLabel="National Benchmark"
-                    scaleMin={Math.max(0, Math.floor(Math.min(avgScore, nationalMean) - 2 * estimatedStd))}
-                    scaleMax={Math.ceil(Math.max(avgScore, nationalMean) + 2 * estimatedStd)}
-                    maxScoreLabel="5.0"
+                    peerLabel="National Average"
                   />
                 </div>
               </section>
@@ -353,7 +344,7 @@ export function IndividualDashboard() {
           </div>
           <div className="grid md:grid-cols-2 gap-4">
             {domainScores.map((domain) => (
-              <DomainBreakdownCard key={domain.domainName} domain={{ ...domain, scaleMax }} />
+              <DomainBreakdownCard key={domain.domainName} domain={domain} />
             ))}
           </div>
         </motion.div>

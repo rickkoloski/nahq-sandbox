@@ -192,7 +192,7 @@ export function ExecutiveDashboardV2() {
                 </div>
                 <p className="text-3xl font-bold text-[#3D3D3D]">{filteredOverallAvg.toFixed(2)}</p>
                 <p className="text-xs text-gray-500 mt-1">
-                  {filteredOverallAvg >= 3.5 ? 'Advanced level' : filteredOverallAvg >= 2.5 ? 'Proficient level' : 'Foundational level'}
+                  {filteredOverallAvg >= 2.3 ? 'Advanced level' : filteredOverallAvg >= 1.3 ? 'Proficient level' : 'Foundational level'}
                 </p>
               </div>
 
@@ -210,7 +210,7 @@ export function ExecutiveDashboardV2() {
                 <p className={`text-3xl font-bold ${gapVsNational >= 0 ? 'text-green-600' : 'text-orange-500'}`}>
                   {gapVsNational >= 0 ? '+' : ''}{gapVsNational.toFixed(2)}
                 </p>
-                <p className="text-xs text-gray-500 mt-1">vs NAHQ benchmark ({orgData.overallNationalAvg.toFixed(2)})</p>
+                <p className="text-xs text-gray-500 mt-1">vs National Average ({orgData.overallNationalAvg.toFixed(2)})</p>
               </div>
 
               {/* KPI 4: Last Assessment */}
@@ -249,8 +249,8 @@ export function ExecutiveDashboardV2() {
           <div className="space-y-4">
             {filteredDomains.map(d => {
               const color = DOMAIN_COLORS[d.domainName] || '#999'
-              const pct = (d.orgAvgScore / 5) * 100
-              const natPct = (d.nationalMean / 5) * 100
+              const pct = (d.orgAvgScore / 3) * 100
+              const natPct = (d.nationalMean / 3) * 100
               const isAbove = d.orgAvgScore >= d.nationalMean
 
               return (

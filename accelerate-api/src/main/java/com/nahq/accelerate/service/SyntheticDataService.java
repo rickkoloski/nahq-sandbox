@@ -179,10 +179,10 @@ public class SyntheticDataService {
         Organization tgh = organizations.get(0); // Tampa General Hospital
         createDemoUser("sarah.chen@tgh.org", "Sarah", "Chen", tgh, executiveRole,
             cycleByOrg.get(tgh.getId()), fv, competencies,
-            new double[]{3.8, 4.1, 3.2, 3.5, 3.9, 4.3, 3.0, 3.7});
+            new double[]{2.0, 2.3, 1.5, 1.8, 2.1, 2.5, 1.4, 2.0});
         createDemoUser("michael.reeves@tgh.org", "Michael", "Reeves", tgh, executiveRole,
             cycleByOrg.get(tgh.getId()), fv, competencies,
-            new double[]{2.5, 3.8, 2.2, 3.0, 3.6, 4.0, 2.0, 3.4});
+            new double[]{1.5, 2.2, 1.1, 1.6, 2.0, 2.4, 1.0, 1.9});
 
         // Create users distributed across orgs
         String[] firstNames = {"Sarah", "Michael", "Jennifer", "David", "Lisa", "James", "Maria",
@@ -246,7 +246,7 @@ public class SyntheticDataService {
         }
 
         // Create assessments with realistic score distributions
-        double[] domainMeans = {3.2, 3.5, 2.8, 3.0, 3.3, 3.8, 2.9, 3.4};
+        double[] domainMeans = {1.6, 1.9, 1.2, 1.4, 1.7, 2.1, 1.3, 1.8};
         int assessmentsCreated = 0;
         int resultsCreated = 0;
 
@@ -268,9 +268,9 @@ public class SyntheticDataService {
             for (Competency comp : competencies) {
                 int domainIdx = comp.getDomain().getDisplayOrder() - 1;
                 double mean = domainMeans[domainIdx];
-                double stdDev = 0.7;
+                double stdDev = 0.45;
                 double score = mean + random.nextGaussian() * stdDev;
-                score = Math.max(1.0, Math.min(5.0, score)); // Clamp to 1-5 range
+                score = Math.max(0.0, Math.min(3.0, score)); // Clamp to 0-3 range
 
                 AssessmentResult result = new AssessmentResult();
                 result.setAssessment(assessment);
@@ -347,8 +347,8 @@ public class SyntheticDataService {
         for (Competency comp : competencies) {
             int domainIdx = comp.getDomain().getDisplayOrder() - 1;
             double baseline = domainBaselines[domainIdx];
-            double score = baseline + (comp.getDisplayOrder() * 0.15);
-            score = Math.max(1.0, Math.min(5.0, score));
+            double score = baseline + (comp.getDisplayOrder() * 0.08);
+            score = Math.max(0.0, Math.min(3.0, score));
 
             AssessmentResult result = new AssessmentResult();
             result.setAssessment(assessment);
