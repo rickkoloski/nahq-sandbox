@@ -17,7 +17,7 @@ import { Header } from '../components/Header'
 import { AiInsightsModal } from '../components/AiInsightsModal'
 import { CompetencyProgressGauge } from '../components/individual/CompetencyProgressGauge'
 import { getDomainConfig, levelColor, levelLabel } from '../components/individual/domainConfig'
-import type { GapAnalysis, BenchmarkComparison, CompetencyGap, CompetencyBenchmark } from '../types/api'
+import type { GapAnalysis, BenchmarkComparison, CompetencyGap } from '../types/api'
 
 /* ── Helpers ── */
 

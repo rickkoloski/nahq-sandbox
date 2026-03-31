@@ -16,7 +16,7 @@ export interface CompetencyProgressGaugeProps {
 export function CompetencyProgressGauge({
   score,
   roleTarget,
-  domainColor,
+  domainColor: _domainColor,
   coursesCount,
 }: CompetencyProgressGaugeProps) {
   const compGap = Math.max(0, roleTarget - score)
