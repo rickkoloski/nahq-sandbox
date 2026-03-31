@@ -15,6 +15,7 @@ import { Header } from '../components/Header'
 import { AiInsightsModal } from '../components/AiInsightsModal'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../components/ui/Select'
 import { WorkforceExplorer } from '../components/executive/WorkforceExplorer'
+import { CompetencyHeatmap } from '../components/executive/CompetencyHeatmap'
 import type { OrgCapabilitySummary, OrgStats, OrgSite, CompetencyMatrix } from '../types/api'
 
 const DOMAIN_COLORS: Record<string, string> = {
@@ -305,6 +306,18 @@ export function ExecutiveDashboardV2() {
             filteredParticipants={filteredParticipants}
           />
         </div>
+
+        {/* Competency Heatmap — site × domain matrix */}
+        {siteMatrix && siteMatrix.groups.length > 0 && (
+          <div className="mt-6">
+            <CompetencyHeatmap
+              matrix={siteMatrix}
+              nationalAverages={Object.fromEntries(
+                (orgData?.domains ?? []).map(d => [d.domainName, d.nationalMean])
+              )}
+            />
+          </div>
+        )}
 
       </div>
     </div>
