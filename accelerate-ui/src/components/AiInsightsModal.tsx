@@ -28,6 +28,8 @@ export interface AiGeneration {
 
 interface AiInsightsModalProps {
   generations: AiGeneration[]
+  /** Called when user submits a freeform prompt (no matching quick action) */
+  onAsk?: (prompt: string) => Promise<Record<string, unknown>>
 }
 
 type Stage = 'palette' | 'results'
@@ -49,7 +51,7 @@ export function AiInsightsButton({ onClick }: { onClick: () => void }) {
   )
 }
 
-export function AiInsightsModal({ generations }: AiInsightsModalProps) {
+export function AiInsightsModal({ generations, onAsk }: AiInsightsModalProps) {
   const [open, setOpen] = useState(false)
   const [stage, setStage] = useState<Stage>('palette')
   const [activeIndex, setActiveIndex] = useState(0)
@@ -60,6 +62,8 @@ export function AiInsightsModal({ generations }: AiInsightsModalProps) {
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [filter, setFilter] = useState('')
+  const [freeformResult, setFreeformResult] = useState<Record<string, unknown> | null>(null)
+  const [freeformLabel, setFreeformLabel] = useState('')
   const searchRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -105,16 +109,18 @@ export function AiInsightsModal({ generations }: AiInsightsModalProps) {
     }
   }
 
-  const handleRegenerate = async () => {
+  const handleFreeformSubmit = async () => {
+    if (!onAsk || !filter.trim()) return
+    const prompt = filter.trim()
+    setFreeformLabel(prompt)
+    setFreeformResult(null)
+    setStage('results')
+    setActiveIndex(-1) // -1 signals freeform mode
     setLoading(true)
     setError(null)
     try {
-      const data = await generations[activeIndex].onGenerate()
-      setResults(prev => {
-        const next = [...prev]
-        next[activeIndex] = data
-        return next
-      })
+      const data = await onAsk(prompt)
+      setFreeformResult(data)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Generation failed')
     } finally {
@@ -122,7 +128,29 @@ export function AiInsightsModal({ generations }: AiInsightsModalProps) {
     }
   }
 
-  const activeResult = results[activeIndex]
+  const handleRegenerate = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      if (activeIndex === -1 && onAsk) {
+        const data = await onAsk(freeformLabel)
+        setFreeformResult(data)
+      } else {
+        const data = await generations[activeIndex].onGenerate()
+        setResults(prev => {
+          const next = [...prev]
+          next[activeIndex] = data
+          return next
+        })
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Generation failed')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const activeResult = activeIndex === -1 ? freeformResult : results[activeIndex]
   const response = activeResult?.response as string || activeResult?.structuredContext as string || ''
   const mode = activeResult?.mode as string || ''
   const model = activeResult?.model as string || ''
@@ -197,6 +225,11 @@ export function AiInsightsModal({ generations }: AiInsightsModalProps) {
                       type="text"
                       value={filter}
                       onChange={e => setFilter(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && filteredGenerations.length === 0 && filter.trim()) {
+                          handleFreeformSubmit()
+                        }
+                      }}
                       placeholder="Ask AI anything or choose a quick action below..."
                       className="flex-1 text-sm text-[#3D3D3D] placeholder:text-gray-400 outline-none bg-transparent"
                     />
@@ -237,7 +270,24 @@ export function AiInsightsModal({ generations }: AiInsightsModalProps) {
                     )
                   })}
 
-                  {filteredGenerations.length === 0 && (
+                  {filteredGenerations.length === 0 && filter.trim() && onAsk && (
+                    <button
+                      onClick={handleFreeformSubmit}
+                      className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left hover:bg-[#00A3E0]/5 transition-colors group"
+                    >
+                      <div className="w-9 h-9 rounded-lg bg-[#00A3E0]/10 flex items-center justify-center shrink-0">
+                        <Sparkles className="w-4 h-4 text-[#00A3E0]" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-[#3D3D3D]">Ask: "{filter}"</p>
+                        <p className="text-xs text-gray-500">Submit as a freeform question with your assessment context</p>
+                      </div>
+                      <div className="w-8 h-8 rounded-full bg-[#00A3E0] flex items-center justify-center shrink-0">
+                        <Play className="w-3.5 h-3.5 text-white ml-0.5" />
+                      </div>
+                    </button>
+                  )}
+                  {filteredGenerations.length === 0 && (!filter.trim() || !onAsk) && (
                     <p className="text-sm text-gray-400 text-center py-4">No matching actions</p>
                   )}
                 </div>
@@ -268,7 +318,9 @@ export function AiInsightsModal({ generations }: AiInsightsModalProps) {
                       <Sparkles className="w-4 h-4 text-white" />
                     </div>
                     <div>
-                      <h2 className="text-base font-bold text-[#3D3D3D]">{generations[activeIndex]?.label}</h2>
+                      <h2 className="text-base font-bold text-[#3D3D3D]">
+                        {activeIndex === -1 ? freeformLabel : generations[activeIndex]?.label}
+                      </h2>
                       <p className="text-xs text-gray-500">Powered by structured context injection</p>
                     </div>
                   </div>

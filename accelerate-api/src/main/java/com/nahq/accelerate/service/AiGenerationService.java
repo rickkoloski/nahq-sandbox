@@ -86,6 +86,33 @@ public class AiGenerationService {
         return generate("org_insights", null, orgId, systemPrompt, context);
     }
 
+    /**
+     * Freeform prompt with structured context injection.
+     * Determines context scope from whichever ID is provided (userId or orgId).
+     */
+    @Transactional
+    public Map<String, Object> ask(String prompt, Long userId, Long orgId) {
+        String context;
+        if (userId != null) {
+            context = contextService.packageIndividualContext(userId);
+        } else if (orgId != null) {
+            context = contextService.packageOrgContext(orgId);
+        } else {
+            context = "No user or organization context available.";
+        }
+
+        String systemPrompt = """
+            You are a healthcare quality advisor with access to structured assessment data.
+            Answer the user's question using the data provided. Be specific — reference actual
+            scores, competencies, and benchmarks from the context. If the question is outside
+            the scope of the data, say so clearly.
+            Format your response in markdown with headers, bold, and bullet points as appropriate.""";
+
+        String userMessage = prompt + "\n\n--- STRUCTURED CONTEXT ---\n\n" + context;
+
+        return generate("freeform_ask", userId, orgId, systemPrompt, userMessage);
+    }
+
     private Map<String, Object> generate(String type, Long userId, Long orgId,
                                           String systemPrompt, String structuredContext) {
         String promptHash = sha256(structuredContext);

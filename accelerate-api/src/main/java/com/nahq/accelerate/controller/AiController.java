@@ -39,6 +39,20 @@ public class AiController {
         return aiService.generateOrgInsights(orgId);
     }
 
+    @PostMapping("/ask")
+    @Operation(summary = "Freeform AI question with structured context injection",
+               description = "Accepts any prompt and injects the user's or org's structured context. " +
+                             "Provide userId for individual context, orgId for organizational context.")
+    public Map<String, Object> ask(@RequestBody Map<String, Object> body) {
+        String prompt = (String) body.get("prompt");
+        if (prompt == null || prompt.isBlank()) {
+            return Map.of("error", "prompt is required");
+        }
+        Long userId = body.get("userId") != null ? ((Number) body.get("userId")).longValue() : null;
+        Long orgId = body.get("orgId") != null ? ((Number) body.get("orgId")).longValue() : null;
+        return aiService.ask(prompt, userId, orgId);
+    }
+
     @GetMapping("/generations/{userId}")
     @Operation(summary = "Retrieve previous AI generations for a user",
                description = "Returns the most recent generation of each type for this user, avoiding re-generation and token cost.")

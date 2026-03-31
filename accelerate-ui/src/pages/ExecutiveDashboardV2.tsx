@@ -154,6 +154,7 @@ export function ExecutiveDashboardV2() {
                 onGenerate: () => api.aiOrgInsights(orgId),
               },
             ]}
+            onAsk={(prompt) => api.aiAsk(prompt, undefined, orgId)}
           />
         </div>
 

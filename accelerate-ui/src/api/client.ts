@@ -42,6 +42,11 @@ export const api = {
   aiSummary: (userId: number) => apiFetch<Record<string, unknown>>(`/api/ai/individual-summary/${userId}`, { method: 'POST' }),
   aiUpskillPlan: (userId: number) => apiFetch<Record<string, unknown>>(`/api/ai/upskill-plan/${userId}`, { method: 'POST' }),
   aiOrgInsights: (orgId: number) => apiFetch<Record<string, unknown>>(`/api/ai/org-insights/${orgId}`, { method: 'POST' }),
+  aiAsk: (prompt: string, userId?: number, orgId?: number) =>
+    apiFetch<Record<string, unknown>>('/api/ai/ask', {
+      method: 'POST',
+      body: JSON.stringify({ prompt, userId: userId ?? null, orgId: orgId ?? null }),
+    }),
   aiGenerations: (userId: number) => apiFetch<Array<Record<string, unknown>>>(`/api/ai/generations/${userId}`),
   platformStats: () => apiFetch<T.PlatformStats>('/api/stats/platform'),
   orgStats: (orgId: number) => apiFetch<T.OrgStats>(`/api/organizations/${orgId}/stats`),

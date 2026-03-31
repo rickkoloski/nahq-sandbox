@@ -203,6 +203,7 @@ export function IndividualDashboard() {
                   initialResult: previousGenerations['upskill_plan'] || null,
                 },
               ]}
+              onAsk={(prompt) => api.aiAsk(prompt, userId)}
             />
           </div>
         </div>
