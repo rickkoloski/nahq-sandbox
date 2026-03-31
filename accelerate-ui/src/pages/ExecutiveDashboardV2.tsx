@@ -14,6 +14,7 @@ import { api } from '../api/client'
 import { Header } from '../components/Header'
 import { AiInsightsModal } from '../components/AiInsightsModal'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../components/ui/Select'
+import { WorkforceExplorer } from '../components/executive/WorkforceExplorer'
 import type { OrgCapabilitySummary, OrgStats, OrgSite, CompetencyMatrix } from '../types/api'
 
 const DOMAIN_COLORS: Record<string, string> = {
@@ -294,6 +295,15 @@ export function ExecutiveDashboardV2() {
               <span>National Average</span>
             </div>
           </div>
+        </div>
+
+        {/* Workforce Explorer — domain cards with bullet charts */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6 mt-6">
+          <WorkforceExplorer
+            domains={filteredDomains}
+            selectedHospital={selectedHospital}
+            filteredParticipants={filteredParticipants}
+          />
         </div>
 
       </div>
