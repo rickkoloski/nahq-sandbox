@@ -119,13 +119,13 @@ export function Framework() {
           <p className="text-gray-500 text-sm mb-6">Click on any domain to explore its competencies and understand proficiency expectations at each level.</p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {DOMAINS.map((domain, index) => (
+              <Link key={domain.name} to={`/domain-detail?domain=${encodeURIComponent(domain.name)}`} className="block">
               <motion.div
-                key={domain.name}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.25 + index * 0.05 }}
                 whileHover={{ y: -4, boxShadow: '0 10px 40px rgba(0,0,0,0.1)' }}
-                className="bg-white rounded-xl p-5 border-2 border-gray-100 hover:border-transparent cursor-pointer transition-all duration-300 group"
+                className="bg-white rounded-xl p-5 border-2 border-gray-100 hover:border-transparent cursor-pointer transition-all duration-300 group h-full"
               >
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110"
                   style={{ backgroundColor: `${domain.color}15` }}>
@@ -139,6 +139,7 @@ export function Framework() {
                   <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
                 </div>
               </motion.div>
+              </Link>
             ))}
           </div>
         </motion.div>

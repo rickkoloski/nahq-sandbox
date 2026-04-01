@@ -6,6 +6,7 @@
  * on the NAHQ 0-3 competency scale.
  */
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ChevronRight } from 'lucide-react'
 import { getDomainConfig } from '../individual/domainConfig'
@@ -94,11 +95,12 @@ function DomainCard({ domain }: { domain: DomainSummary }) {
   const deltaPositive = delta >= 0
 
   return (
+    <Link to={`/domain-detail?domain=${encodeURIComponent(domain.domainName)}`} className="block">
     <motion.div
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
       whileHover={{ y: -2 }}
-      className="bg-white rounded-xl border border-gray-200 p-4 cursor-pointer transition-shadow hover:shadow-md relative"
+      className="bg-white rounded-xl border border-gray-200 p-4 cursor-pointer transition-shadow hover:shadow-md relative h-full"
     >
       {/* Header */}
       <div className="flex items-center gap-2 mb-3">
@@ -149,6 +151,7 @@ function DomainCard({ domain }: { domain: DomainSummary }) {
         </div>
       </div>
     </motion.div>
+    </Link>
   )
 }
 
