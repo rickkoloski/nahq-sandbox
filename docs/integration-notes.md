@@ -223,19 +223,29 @@ This internal NAHQ presentation reveals the full system map beyond what MB docum
 - **HubSpot** — marketing automation (connected to Nimble via HighRoad Solutions)
 - **Power BI** — business intelligence and reporting
 
-### Data Flow (actual, not aspirational)
-- Professional Assessment reporting is **automated in Nimble AMS** (not a separate system)
-- Qualtrics survey responses flow **into Nimble** (matched by customer)
-- Oasis learning participation data flows **into Nimble** (automated)
+### Data Flow (with attribution)
+
+**Confirmed by NAHQ's own docs (PM file #680, BI Orientation):**
+- Professional Assessment reporting is **automated in Nimble AMS** (Data Assets slide shows "Automated reporting in Nimble AMS for Professional Assessment")
+- Qualtrics survey responses flow **into Nimble**, matched by customer (Data Assets slide, confirmed separately by MB Integration Overview #662: "Qualtrics integrates with Nimble for survey execution")
 - Nimble is the single source of truth for all customer-facing data
 - Power BI pulls from Nimble for dashboards and reports
 
+**Confirmed by MB Integration Overview (PM file #662):**
+- "Accelerate Service interacts with Nimble to collect: Assessment responses, Organization data, User activity data"
+- Qualtrics integrates with Nimble (not directly with Accelerate)
+
+**Inferred from web research (NOT confirmed by Tim's docs — needs verification):**
+- Oasis learning participation/completion data flows into Nimble. Source: Oasis product marketing and review sites describe a Nimble AMS integration with "automatic completion push-back to the AMS." The NAHQ BI orientation diagram shows Oasis connected to the Nimble hub with integration arrows, but does not explicitly describe the direction or content of the data flow for NAHQ's specific deployment.
+
 ### External Data Sources
-- **Definitive Healthcare** — hospital/system attributes, exec contacts, CMS star ratings, HCAHPS scores. Linked to individuals via employer affiliations in Nimble.
-- **ACCME/PARS** — CE credit reporting (Oasis is an ACCME Premier Technology Partner)
+- **Definitive Healthcare** — hospital/system attributes, exec contacts, CMS star ratings, HCAHPS scores. Linked to individuals via employer affiliations in Nimble. (Source: PM #680, Data Assets slide)
+- **ACCME/PARS** — CE credit reporting. Oasis is an ACCME Premier Technology Partner. (Source: web research on Oasis)
 
 ### Implication for Accelerate
-The data flow is: **Qualtrics → Nimble → (our system)**. We don't need to integrate with Qualtrics AND Nimble separately — Nimble is the aggregation point. Similarly for Oasis: completion data already pushes back to Nimble. This means **Nimble/Salesforce is the primary integration surface**, not three separate integrations.
+The data flow for assessment data is confirmed: **Qualtrics → Nimble → (our system)**. We don't need to integrate with Qualtrics AND Nimble separately — Nimble is the aggregation point for PA results.
+
+For course completion data, the path is likely **Oasis → Nimble → (our system)**, but this is inferred from product capabilities, not confirmed for NAHQ's deployment. **Tim should confirm whether Oasis completion data actually lands in Nimble in their setup.** If it does, Nimble/Salesforce is truly the single integration surface for all data Accelerate needs.
 
 ---
 
@@ -297,4 +307,4 @@ Based on everything above, the production integration path is:
    - Spring Security OAuth2 client
    - Microsoft Graph for user profile enrichment
 
-**The key insight from the NAHQ BI orientation doc: Nimble is the hub. Start there, and most of the other integrations become data that's already in Nimble.**
+**The key insight from the NAHQ BI orientation doc: Nimble is the hub. Assessment data (Qualtrics → Nimble) is confirmed. Course completion data (Oasis → Nimble) is likely but needs Tim's confirmation. Start with Nimble, and most of the other integrations may resolve to data that's already there.**
