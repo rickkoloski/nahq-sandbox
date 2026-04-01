@@ -70,6 +70,22 @@ public class AuthController {
         Long directOrgId = first[5] != null ? ((Number) first[5]).longValue() : null;
         Long healthSystemOrgId = hierarchyService.resolveHealthSystem(directOrgId);
 
+        // Admin users may not be employed — fall back to the first health system
+        if (healthSystemOrgId == null && roles.contains("admin")) {
+            @SuppressWarnings("unchecked")
+            List<Object> firstOrg = em.createNativeQuery(
+                "SELECT DISTINCT o.id FROM organization o " +
+                "JOIN party p ON o.party_id = p.id " +
+                "JOIN party_relationship pr ON pr.to_party_id = p.id " +
+                "JOIN party_relationship_type prt ON pr.relationship_type_id = prt.id " +
+                "WHERE prt.internal_id = 'subsidiary_of' AND pr.thru_date IS NULL " +
+                "ORDER BY o.id LIMIT 1"
+            ).getResultList();
+            if (!firstOrg.isEmpty()) {
+                healthSystemOrgId = ((Number) firstOrg.get(0)).longValue();
+            }
+        }
+
         return ResponseEntity.ok(new LoginResponse(
             ((Number) first[0]).longValue(),
             (String) first[1],

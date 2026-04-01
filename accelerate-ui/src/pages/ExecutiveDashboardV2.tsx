@@ -34,7 +34,7 @@ export function ExecutiveDashboardV2() {
   const { user } = useAuth()
   // Use the health system org (top of hierarchy) for system-wide dashboards.
   // The auth response resolves this via OrganizationHierarchyService — no waterfall needed.
-  const orgId = Number(params.get('orgId') || user?.healthSystemOrgId || user?.organizationId || 1)
+  const orgId = Number(params.get('orgId') || user?.healthSystemOrgId || user?.organizationId || 0)
 
   const [orgData, setOrgData] = useState<OrgCapabilitySummary | null>(null)
   const [orgStats, setOrgStats] = useState<OrgStats | null>(null)

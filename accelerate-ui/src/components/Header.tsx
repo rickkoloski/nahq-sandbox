@@ -5,8 +5,8 @@ import { useAuth } from '../api/auth'
 
 const ADMIN_NAV = [
   { path: '/admin', label: 'Home' },
-  { path: '/executive-dashboard?orgId=1', label: 'Org Dashboard' },
-  { path: '/individual-dashboard?userId=2', label: 'User View' },
+  { path: '/executive-dashboard', label: 'Org Dashboard' },
+  { path: '/individual-dashboard', label: 'User View' },
 ]
 
 /**
