@@ -65,10 +65,12 @@ function CompetencyBulletRow({
   comp,
   domainColor,
   roleTarget,
+  domainName,
 }: {
   comp: CompetencyGap
   domainColor: string
   roleTarget: number
+  domainName: string
 }) {
   const score = comp.score
   const gap = parseFloat((roleTarget - score).toFixed(1))
@@ -81,9 +83,12 @@ function CompetencyBulletRow({
     <div className="flex items-center gap-3 py-2">
       {/* Competency name */}
       <div className="w-52 flex-shrink-0">
-        <span className="text-[11px] font-semibold text-[#3D3D3D] leading-snug block">
+        <Link
+          to={`/competency-detail?domain=${encodeURIComponent(domainName)}&competency=${encodeURIComponent(comp.competencyName)}`}
+          className="text-[11px] font-semibold text-[#3D3D3D] leading-snug block hover:text-[#00A3E0] transition-colors"
+        >
           {comp.competencyName}
-        </span>
+        </Link>
       </div>
 
       {/* Bullet bar */}
@@ -566,6 +571,7 @@ export function IndividualDomainDetail() {
                   comp={comp}
                   domainColor={config.color}
                   roleTarget={comp.target}
+                  domainName={domainName}
                 />
               ))}
             </div>
@@ -603,13 +609,15 @@ export function IndividualDomainDetail() {
             {domainGaps.map((comp) => {
               const score = comp.score
               const coursesCount = coursesForCompetency(comp.competencyId)
+              const compDetailUrl = `/competency-detail?domain=${encodeURIComponent(domainName)}&competency=${encodeURIComponent(comp.competencyName)}`
               return (
-                <div
+                <Link
                   key={comp.competencyId}
-                  className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 hover:shadow-md hover:border-gray-300 transition-all group"
+                  to={compDetailUrl}
+                  className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 hover:shadow-md hover:border-gray-300 transition-all group block"
                 >
                   <div className="flex items-start justify-between gap-4 mb-5">
-                    <p className="text-sm font-bold text-[#3D3D3D] leading-snug flex-1 min-w-0">
+                    <p className="text-sm font-bold text-[#3D3D3D] leading-snug flex-1 min-w-0 group-hover:text-[#00A3E0] transition-colors">
                       {comp.competencyName}
                     </p>
                   </div>
@@ -620,7 +628,7 @@ export function IndividualDomainDetail() {
                     domainColor={config.color}
                     coursesCount={coursesCount}
                   />
-                </div>
+                </Link>
               )
             })}
           </div>
