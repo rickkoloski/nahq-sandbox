@@ -59,7 +59,7 @@ export function Framework() {
 
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 px-10 py-10">
             <div className="flex-1">
-              <img src="/images/nahq-logo.png" alt="NAHQ" className="h-8 w-auto brightness-0 invert mb-5" />
+              <img src="/images/nahq-logo.png" alt="NAHQ" className="h-8 w-auto mb-5" />
               <h2 className="text-3xl font-bold text-white leading-tight mb-3">Healthcare Quality<br />Competency Framework&trade;</h2>
               <p className="text-white/90 text-sm leading-relaxed max-w-sm">
                 The expert-created Framework provides a common vocabulary, knowledge and toolset,
