@@ -40,12 +40,23 @@
 - For MVP: Nimble remains system of record for member/account data
 - Accelerate owns application-layer objects (RBAC, cohorts, dashboards, assessment-cycle logic)
 
-**What we don't know:**
-- What APIs does Nimble expose? (REST? Salesforce standard APIs? SOAP?)
-- What data needs to sync between Nimble → Accelerate? (member profiles, org structure, assessment history?)
+**What we now know (API research, March 31):**
+- See `docs/nimble-ams-api-research.md` for full technical reference
+- Three API paths: Salesforce REST API (Path A, recommended), Nimble Fuse Integration API (Path B, batch sync), NAMS REST Framework (Path C, versioned endpoints)
+- Nimble namespace is `NU` (157 custom objects), package version NU 52.4.0 Winter 2026
+- Auth: OAuth 2.0 JWT Bearer flow (server-to-server, no user interaction) via Connected App
+- Nimble Programs package handles certification/accreditation tracking (Program, Milestone, Component objects)
+- NAMS LMS API exists for course/purchase sync (may already carry Oasis data)
+- Rate limits: 100K base + 1K per user license per 24h (Enterprise/Unlimited)
+
+**What we still don't know:**
+- Does NAHQ use Nimble Programs for competency certification? Or custom objects?
+- What NAHQ-specific custom fields exist beyond standard NU objects?
+- Where do Professional Assessment results live in Nimble (if at all)?
 - Sync pattern: real-time query, batch sync, or manual import for MVP?
 - Can Nimble's Salesforce Identity (OIDC) be used for participant SSO? (Tim said not needed for MVP)
-- Who has Nimble admin access? (Credentials exist, access model needs confirmation from MB/NAHQ)
+- Who has Nimble admin access and can create a Connected App for us?
+- What Salesforce edition does NAHQ use? (Affects rate limits)
 
 **Our current approach:**
 - Sandbox uses its own auth (email-based login, no password)
@@ -90,7 +101,7 @@
 
 ## 3. Oasis LMS
 
-**What it is:** NAHQ's Learning Management System. Hosts CE-eligible courses and training content.
+**What it is:** NAHQ's Learning Management System. Hosts CE-eligible courses and training content. Built by 360Factor LLC. ACCME Premier Technology Partner.
 
 **Role in Accelerate:**
 - Course catalog synced from Oasis → Accelerate
@@ -98,24 +109,34 @@
 - Training tracking (completion, hours, CE credits) flows from Oasis
 - "Go to Course" buttons in our UI would deep-link to Oasis
 
-**What we know:**
+**What we know (updated from research, March 31):**
 - Learning Resources from Oasis include: course title, duration, CE eligibility, competency mappings
 - Our architecture-counter-proposal mentions `lms_course (synced from Oasis)` in the data model
 - Tim's framework doc says MVP upskilling uses NAHQ's existing competency-to-course mappings
+- Oasis supports SCORM 1.1/1.2/2004, SAML & OAuth SSO, CE credit tracking in 0.25 increments
+- Oasis has 30+ AMS integrations including **Nimble AMS** (NAHQ's member system)
+- Oasis pushes completion data back to AMS automatically
+- Oasis has API access (confirmed) but no public API docs — partner/NDA gated
+- PARS integration is API-based (sends CME data to ACCME automatically)
+- LTI and xAPI support: NOT confirmed from any public source
+- `university.oasis-lms.com` is the subdomain pattern for client portals (may be NAHQ-U)
 
 **What we don't know:**
-- What API does Oasis expose? (REST? LTI? xAPI?)
-- What's the course catalog format? (Can Tim share a CSV/spreadsheet of courses?)
-- How does course completion data flow back? (Webhook? Polling? Manual?)
+- REST API details (endpoints, auth, rate limits) — not publicly documented
+- Whether Oasis supports LTI 1.3 or xAPI
 - Deep-link URL pattern for individual courses
-- Is there an existing competency-to-course mapping we can import?
+- Whether the existing Oasis→Nimble completion sync could be our data source
+- Whether NAHQ-U is the same Oasis instance or separate
+- Who the Oasis admin contact is at NAHQ
 
 **Our current approach:**
 - 39 synthetic courses seeded via `SeedDataController`
 - pgvector semantic matching for course recommendations (approximate, not NAHQ's actual mappings)
 - No Oasis integration implemented
 
-**Integration priority:** Medium for production. The course catalog could be imported as a static dataset initially, with completion tracking added later.
+**Integration priority:** Medium for production. MVP plan: static catalog import (Pattern A from research). Production: API-based sync if API available, or read completions via Nimble/Salesforce.
+
+**Detailed research:** See [oasis-lms-integration-research.md](oasis-lms-integration-research.md) — full analysis of Oasis capabilities, LMS standards (SCORM/LTI/xAPI), 4 integration patterns, and 14 questions for Tim.
 
 ---
 
@@ -175,3 +196,105 @@
 | Claude API | AI generation | Insights | **Done** | N/A |
 
 **Key insight:** None of the external integrations are blocking MVP or demo. The sandbox runs on its own data. When production requires real data, the integrations are well-understood and the architecture (Party model, Spring Security, REST APIs) is ready to connect. The risk MB identified but never mitigated — proving the Nimble and Qualtrics integrations in code — remains open and should be addressed in the elaboration phase.
+
+---
+
+## Detailed API Research (separate docs)
+
+| System | Research Doc | Key Finding |
+|--------|-------------|-------------|
+| Nimble/Salesforce | `docs/nimble-ams-api-research.md` | 3 API paths (Salesforce REST, Nimble Fuse, NAMS REST). 157 custom objects with `NU` namespace. JWT Bearer OAuth for server-to-server. Person Accounts for individuals. |
+| Qualtrics | `docs/qualtrics-api-research.md` | v3 REST API. Webhook for PA completions (`surveyengine.completedResponse`). Bulk export (async 3-step) or single response fetch. 3,000 req/min rate limit. |
+| Oasis LMS | `docs/oasis-lms-integration-research.md` | No public API docs (gated). Already integrates with Nimble (SSO + completion push-back). SCORM 1.1/1.2/2004, SAML/OAuth. Completion data may flow through Salesforce. |
+| Entra ID | `docs/patterns/entra-id-integration.md` | Authorization Code + PKCE flow. Multi-tenant registration for hospital SSO. Spring Cloud Azure starter available. Microsoft Graph for user profiles. |
+
+---
+
+## NAHQ's Existing Technology Landscape
+
+**Source:** "Orientation to NAHQ Business Intelligence and Data Assets" (PM file #680)
+
+This internal NAHQ presentation reveals the full system map beyond what MB documented:
+
+### Core Business Platforms
+- **Nimble AMS (Salesforce)** — central customer portal, financial transactions, demographics, membership, certifications, purchase history, events, learning program participation
+- **Oasis** — Learning Management System
+- **Qualtrics** — surveys (Professional Assessment + other customer surveys)
+- **HubSpot** — marketing automation (connected to Nimble via HighRoad Solutions)
+- **Power BI** — business intelligence and reporting
+
+### Data Flow (actual, not aspirational)
+- Professional Assessment reporting is **automated in Nimble AMS** (not a separate system)
+- Qualtrics survey responses flow **into Nimble** (matched by customer)
+- Oasis learning participation data flows **into Nimble** (automated)
+- Nimble is the single source of truth for all customer-facing data
+- Power BI pulls from Nimble for dashboards and reports
+
+### External Data Sources
+- **Definitive Healthcare** — hospital/system attributes, exec contacts, CMS star ratings, HCAHPS scores. Linked to individuals via employer affiliations in Nimble.
+- **ACCME/PARS** — CE credit reporting (Oasis is an ACCME Premier Technology Partner)
+
+### Implication for Accelerate
+The data flow is: **Qualtrics → Nimble → (our system)**. We don't need to integrate with Qualtrics AND Nimble separately — Nimble is the aggregation point. Similarly for Oasis: completion data already pushes back to Nimble. This means **Nimble/Salesforce is the primary integration surface**, not three separate integrations.
+
+---
+
+## MVP Phase 1 Integration Scope
+
+**Source:** "NAHQ Accelerate MVP - Phase 1.docx" (PM file #727, Tim uploaded March 31)
+
+### Timeline
+- Build window: **March 30 – August 14, 2026**
+- UAT: August 17 – August 28, 2026
+- 10 structured development sprints
+
+### Integration scope (explicitly stated by Tim)
+1. **Nimble AMS** — identity alignment
+2. **Qualtrics** — assessment delivery workflow
+3. **Oasis LMS** — course launch linkage (where applicable)
+
+### Product types for MVP
+- Professional Assessment
+- Patient Safety
+- Assess Only
+
+### AI scope (MVP-limited)
+- AI-assisted interpretation only (summaries, insights)
+- AI does NOT determine scoring, benchmarking, or standards
+- Matches our structured context injection approach exactly
+
+### What's explicitly NOT in Phase 1
+- Pulse Survey workflows
+- Advanced LMS governance
+- Expanded benchmarking models
+- AI-driven scoring or automated decision logic
+- Enterprise rule engines
+
+---
+
+## Recommended Integration Sequence
+
+Based on everything above, the production integration path is:
+
+1. **Nimble/Salesforce first** (identity + assessment data + course completions all live here)
+   - OAuth JWT Bearer connected app
+   - Query Person Accounts for user identity
+   - Query assessment results (PA data already in Nimble)
+   - Query course completions (Oasis pushes to Nimble)
+
+2. **Qualtrics webhook second** (real-time PA completion notification)
+   - Register webhook for `surveyengine.completedResponse`
+   - Fetch response, map to competencies, store in Accelerate
+   - This replaces/supplements the Nimble sync for fresher data
+
+3. **Oasis LMS deep-link third** (course launch from upskill plans)
+   - URL pattern for launching specific courses
+   - SSO handoff via SAML or OAuth
+   - Completion tracking via Nimble (not direct Oasis API)
+
+4. **Entra ID last** (admin SSO, production hardening)
+   - Multi-tenant app registration
+   - Spring Security OAuth2 client
+   - Microsoft Graph for user profile enrichment
+
+**The key insight from the NAHQ BI orientation doc: Nimble is the hub. Start there, and most of the other integrations become data that's already in Nimble.**
