@@ -433,3 +433,89 @@ Organizational Context (for org_insights, freeform_ask):
 | Auth & Identity | 1 | ✓ Sandbox | Production: Entra + Nimble SSO |
 | External Systems | 0 | Not started | ExternalSystemMapping for Nimble/Qualtrics/Oasis |
 | **Total** | **23 tables + 4 MVs** | | |
+
+---
+---
+
+# Appendix A: Future Considerations
+
+## A.1 Agreement-Based Product Model
+
+**Status:** Not implemented. Noted as an evolution path for when ProductType
+becomes real and NAHQ's commercial model requires more flexibility.
+
+**Background:** The current model has a flat `Engagement` entity with an
+implicit single product type. This works for the demo and initial delivery
+but limits how we represent what organizations have actually purchased.
+
+**The Silverston pattern:** Agreement → AgreementItem → ProductType
+
+```
+┌─────────────────────────────┐
+│ Agreement                   │
+├─────────────────────────────┤
+│ organization_id        (FK) │──── Who (Tampa General Hospital)
+│ agreement_type              │──── "workforce_accelerator" | "subscription"
+│ status                      │──── ACTIVE | EXPIRED | PENDING
+│ effective_date              │
+│ expiration_date             │
+│ terms (jsonb)               │──── Pricing, participant caps, etc.
+└──────────────┬──────────────┘
+               │ 1:many
+               ▼
+┌─────────────────────────────┐
+│ AgreementItem               │
+├─────────────────────────────┤
+│ agreement_id           (FK) │
+│ product_type_id        (FK) │──── What they purchased
+│ quantity                    │──── e.g., 200 participant seats
+│ effective_date              │──── Item-level dates (may differ
+│ expiration_date             │     from agreement dates)
+│ status                      │
+└──────────────┬──────────────┘
+               │ many:1
+               ▼
+┌─────────────────────────────┐
+│ ProductType                 │
+├─────────────────────────────┤
+│ name                        │──── "Professional Assessment"
+│ internal_id                 │     "Patient Safety"
+│ description                 │     "Assess Only"
+│ features (jsonb)            │──── { has_learning: true,
+│                             │       has_benchmark: true,
+│                             │       has_navigator: true,
+│                             │       assessment_scope: "full" }
+└─────────────────────────────┘
+```
+
+**Why this matters:**
+
+1. **Multi-product engagements.** A hospital can purchase Professional
+   Assessment for 50 quality leaders AND Assess Only for 200 frontline
+   staff under a single agreement. The current flat model would require
+   two separate Engagements.
+
+2. **Feature entitlement as a query.** "Does this participant have LMS
+   access?" becomes a join: Participant → Engagement → AgreementItem →
+   ProductType → features.has_learning, rather than a hardcoded check.
+
+3. **Commercial flexibility.** The same pattern supports both project-based
+   engagements (12-month WFA with a start/end date) and perpetual
+   subscriptions (annual renewal), which parallels how Nimble AMS handles
+   NAHQ's core membership products.
+
+4. **Audit trail.** Agreement history shows what was contracted vs.
+   what was delivered — important for a $1.3M pilot engagement.
+
+**Prior art:** Silverston's "Agreement" pattern (Vol. 1, Ch. 4).
+Hospitality: timeshare ownership (agreement-based access to a shared
+resource). Airlines: ticket = agreement item granting access to a
+specific flight product. The common thread is an entitlement that
+governs what platform features and resources the customer has paid
+for and subsequently has access to.
+
+**When to implement:** When NAHQ needs to support multiple product
+types per organization, or when the commercial model requires
+tracking what was purchased vs. delivered. The current `Engagement`
+table is the natural migration target — it becomes the Agreement,
+and we add AgreementItem + ProductType alongside it.
