@@ -13,10 +13,10 @@ export function Home() {
   }, [])
 
   const cards = [
-    { icon: Users, title: 'Client & User Management', desc: 'Manage client organizations, invite users, assign roles, and control access across all sites', stat: stats ? `${stats.organizations} Clients · ${stats.users} Users` : 'Loading...', href: '/executive-dashboard?orgId=1', color: '#00A3E0' },
-    { icon: Target, title: 'Benchmarks & Standards', desc: 'Define role benchmarks, peer groups, and governance standards', stat: stats ? `${stats.domains} Domains · ${stats.competencies} Competencies` : 'Loading...', href: '/executive-dashboard?orgId=1', color: '#F68B1F' },
-    { icon: BookOpen, title: 'Learning Governance', desc: 'Manage score-to-content mapping rules and LMS catalog', stat: stats ? `${stats.courses} Courses` : 'Loading...', href: '/executive-dashboard?orgId=1', color: '#8BC53F' },
-    { icon: Shield, title: 'User Access & Permissions', desc: 'Manage user access, revoke accounts, and initiate password resets', stat: stats ? `${stats.users} Users` : 'Loading...', href: '/executive-dashboard?orgId=1', color: '#6B4C9A' },
+    { icon: Users, title: 'Client & User Management', desc: 'Manage client organizations, invite users, assign roles, and control access across all sites', stat: stats ? `${stats.organizations} Clients · ${stats.users} Users` : 'Loading...', href: '/executive-dashboard', color: '#00A3E0' },
+    { icon: Target, title: 'Benchmarks & Standards', desc: 'Define role benchmarks, peer groups, and governance standards', stat: stats ? `${stats.domains} Domains · ${stats.competencies} Competencies` : 'Loading...', href: '/executive-dashboard', color: '#F68B1F' },
+    { icon: BookOpen, title: 'Learning Governance', desc: 'Manage score-to-content mapping rules and LMS catalog', stat: stats ? `${stats.courses} Courses` : 'Loading...', href: '/executive-dashboard', color: '#8BC53F' },
+    { icon: Shield, title: 'User Access & Permissions', desc: 'Manage user access, revoke accounts, and initiate password resets', stat: stats ? `${stats.users} Users` : 'Loading...', href: '/executive-dashboard', color: '#6B4C9A' },
     { icon: Settings, title: 'Platform Admins', desc: 'Invite and manage NAHQ staff who have admin access to this governance portal', stat: '1 Admin', href: '#', color: '#99154B' },
   ]
 
