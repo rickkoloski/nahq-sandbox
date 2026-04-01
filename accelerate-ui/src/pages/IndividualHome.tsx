@@ -24,7 +24,7 @@ const STEPS = [
     title: 'Explore the Framework',
     description: 'Learn about the 8 domains and 29 competencies identified in the NAHQ Healthcare Quality Competency Framework™ before you begin.',
     action: 'Explore Framework',
-    href: '/individual-dashboard',
+    href: '/framework',
     color: '#00A3E0',
     bg: 'from-[#00A3E0]/8 to-[#00A3E0]/4',
     border: 'border-[#00A3E0]/30',

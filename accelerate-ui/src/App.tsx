@@ -8,6 +8,7 @@ import { IndividualDashboard } from './pages/IndividualDashboard'
 import { ExecutiveDashboardV2 } from './pages/ExecutiveDashboardV2'
 import { IndividualDomainDetail } from './pages/IndividualDomainDetail'
 import { IndividualUpskillPlan } from './pages/IndividualUpskillPlan'
+import { Framework } from './pages/Framework'
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode, allowedRoles?: string[] }) {
   const { user, loading } = useAuth()
@@ -48,6 +49,7 @@ function App() {
           <Route path="/domain-detail" element={<ProtectedRoute><IndividualDomainDetail /></ProtectedRoute>} />
           <Route path="/upskill-plan" element={<ProtectedRoute><IndividualUpskillPlan /></ProtectedRoute>} />
           <Route path="/user-dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
+          <Route path="/framework" element={<ProtectedRoute><Framework /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </BrowserRouter>
