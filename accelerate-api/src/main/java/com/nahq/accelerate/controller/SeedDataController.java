@@ -69,6 +69,14 @@ public class SeedDataController {
         );
     }
 
+    @PostMapping("/role-targets")
+    @Operation(summary = "Seed NAHQ role targets from authoritative dataset",
+               description = "Loads 1,512 role targets (28 competencies × 6 role groups × 9 job levels) " +
+                             "from Tim's Role Group Target Asset file.")
+    public Map<String, Object> seedRoleTargets() {
+        return syntheticDataService.seedRoleTargets();
+    }
+
     @PostMapping("/redistribute-sites")
     @Operation(summary = "Redistribute individuals across subsidiary sites",
                description = "Finds the first health system org (one that has subsidiaries) " +

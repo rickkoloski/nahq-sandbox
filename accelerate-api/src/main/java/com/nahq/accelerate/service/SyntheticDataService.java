@@ -6,6 +6,8 @@ import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -248,7 +250,8 @@ public class SyntheticDataService {
             users.add(userRepo.save(user));
         }
 
-        // Create assessments with realistic score distributions
+        // Domain means control score distribution probabilities (not literal scores)
+        // Higher mean → more 2s and 3s; lower mean → more 0s and 1s
         double[] domainMeans = {1.6, 1.9, 1.2, 1.4, 1.7, 2.1, 1.3, 1.8};
         int assessmentsCreated = 0;
         int resultsCreated = 0;
@@ -271,15 +274,30 @@ public class SyntheticDataService {
             for (Competency comp : competencies) {
                 int domainIdx = comp.getDomain().getDisplayOrder() - 1;
                 double mean = domainMeans[domainIdx];
-                double stdDev = 0.45;
-                double score = mean + random.nextGaussian() * stdDev;
-                score = Math.max(0.0, Math.min(3.0, score)); // Clamp to 0-3 range
+
+                // Scores are categorical: 0 (Not Performing), 1 (Foundational), 2 (Proficient), 3 (Advanced)
+                // Use weighted random based on domain mean to produce realistic integer distribution
+                double roll = random.nextDouble();
+                int score;
+                if (mean >= 2.0) {
+                    // High-performing domain: mostly 2s and 3s
+                    score = roll < 0.05 ? 0 : roll < 0.15 ? 1 : roll < 0.55 ? 2 : 3;
+                } else if (mean >= 1.5) {
+                    // Mid-performing: mix of 1s and 2s
+                    score = roll < 0.05 ? 0 : roll < 0.30 ? 1 : roll < 0.75 ? 2 : 3;
+                } else if (mean >= 1.0) {
+                    // Lower-performing: mostly 1s with some 0s and 2s
+                    score = roll < 0.10 ? 0 : roll < 0.50 ? 1 : roll < 0.85 ? 2 : 3;
+                } else {
+                    // Foundational: mostly 0s and 1s
+                    score = roll < 0.30 ? 0 : roll < 0.65 ? 1 : roll < 0.90 ? 2 : 3;
+                }
 
                 AssessmentResult result = new AssessmentResult();
                 result.setAssessment(assessment);
                 result.setCompetency(comp);
                 result.setFrameworkVersion(fv);
-                result.setScore(BigDecimal.valueOf(score).setScale(2, RoundingMode.HALF_UP));
+                result.setScore(BigDecimal.valueOf(score));
                 resultRepo.save(result);
                 resultsCreated++;
             }
@@ -350,15 +368,81 @@ public class SyntheticDataService {
         for (Competency comp : competencies) {
             int domainIdx = comp.getDomain().getDisplayOrder() - 1;
             double baseline = domainBaselines[domainIdx];
-            double score = baseline + (comp.getDisplayOrder() * 0.08);
-            score = Math.max(0.0, Math.min(3.0, score));
+
+            // Demo accounts use integer scores derived from baseline
+            int score;
+            if (baseline >= 2.0) {
+                score = comp.getDisplayOrder() <= 2 ? 3 : 2;
+            } else if (baseline >= 1.5) {
+                score = comp.getDisplayOrder() <= 2 ? 2 : (comp.getDisplayOrder() <= 4 ? 2 : 1);
+            } else if (baseline >= 1.0) {
+                score = comp.getDisplayOrder() <= 1 ? 2 : 1;
+            } else {
+                score = comp.getDisplayOrder() <= 2 ? 1 : 0;
+            }
+            score = Math.max(0, Math.min(3, score));
 
             AssessmentResult result = new AssessmentResult();
             result.setAssessment(assessment);
             result.setCompetency(comp);
             result.setFrameworkVersion(fv);
-            result.setScore(BigDecimal.valueOf(score).setScale(2, RoundingMode.HALF_UP));
+            result.setScore(BigDecimal.valueOf(score));
             resultRepo.save(result);
+        }
+    }
+
+    @Transactional
+    public Map<String, Object> seedRoleTargets() {
+        long start = System.currentTimeMillis();
+
+        // Read role targets from embedded resource
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            InputStream is = getClass().getResourceAsStream("/seed/role-targets.json");
+            if (is == null) throw new RuntimeException("role-targets.json not found on classpath");
+
+            List<Map<String, Object>> targets = mapper.readValue(is,
+                mapper.getTypeFactory().constructCollectionType(List.class, Map.class));
+
+            // Get framework version
+            Object fvId = em.createNativeQuery(
+                "SELECT id FROM competency_framework_version WHERE version_label = '2025-v1'"
+            ).getSingleResult();
+
+            int inserted = 0;
+            for (Map<String, Object> t : targets) {
+                String compName = (String) t.get("competency");
+                String roleGroup = (String) t.get("role_group");
+                String jobLevel = (String) t.get("job_level");
+                int target = ((Number) t.get("target")).intValue();
+
+                String targetLevel = switch (target) {
+                    case 0 -> "NOT_PERFORMING";
+                    case 1 -> "FOUNDATIONAL";
+                    case 2 -> "PROFICIENT";
+                    case 3 -> "ADVANCED";
+                    default -> "UNKNOWN";
+                };
+
+                em.createNativeQuery(
+                    "INSERT INTO role_target (competency_id, framework_version_id, target_level, target_score, role_group, job_level) " +
+                    "SELECT c.id, :fvId, :targetLevel, :targetScore, :roleGroup, :jobLevel " +
+                    "FROM competency c WHERE c.name = :compName"
+                )
+                .setParameter("fvId", fvId)
+                .setParameter("targetLevel", targetLevel)
+                .setParameter("targetScore", target)
+                .setParameter("roleGroup", roleGroup)
+                .setParameter("jobLevel", jobLevel)
+                .setParameter("compName", compName)
+                .executeUpdate();
+                inserted++;
+            }
+
+            long elapsed = System.currentTimeMillis() - start;
+            return Map.of("roleTargets", inserted, "elapsedMs", elapsed);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to seed role targets: " + e.getMessage(), e);
         }
     }
 }
