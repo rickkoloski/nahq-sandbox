@@ -392,6 +392,118 @@ public class SyntheticDataService {
     }
 
     @Transactional
+    public Map<String, Object> seedCourses() {
+        long start = System.currentTimeMillis();
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+
+            // Load courses
+            InputStream coursesIs = getClass().getResourceAsStream("/seed/courses.json");
+            if (coursesIs == null) throw new RuntimeException("courses.json not found");
+            List<Map<String, Object>> courses = mapper.readValue(coursesIs,
+                mapper.getTypeFactory().constructCollectionType(List.class, Map.class));
+
+            // Load mappings
+            InputStream mappingsIs = getClass().getResourceAsStream("/seed/course-competency-mappings.json");
+            if (mappingsIs == null) throw new RuntimeException("course-competency-mappings.json not found");
+            List<Map<String, Object>> mappings = mapper.readValue(mappingsIs,
+                mapper.getTypeFactory().constructCollectionType(List.class, Map.class));
+
+            // Load competency name map (crosswalk names → our DB names)
+            InputStream nameMapIs = getClass().getResourceAsStream("/seed/competency-name-map.json");
+            if (nameMapIs == null) throw new RuntimeException("competency-name-map.json not found");
+            Map<String, String> nameMap = mapper.readValue(nameMapIs,
+                mapper.getTypeFactory().constructMapType(Map.class, String.class, String.class));
+
+            // Get framework version
+            Object fvId = em.createNativeQuery(
+                "SELECT id FROM competency_framework_version WHERE version_label = '2025-v1'"
+            ).getSingleResult();
+
+            // Clear existing courses and mappings
+            em.createNativeQuery("DELETE FROM course_competency_mapping").executeUpdate();
+            em.createNativeQuery("DELETE FROM lms_course").executeUpdate();
+
+            // Insert courses
+            int coursesInserted = 0;
+            Map<String, Long> courseIdByTitle = new LinkedHashMap<>();
+
+            for (Map<String, Object> course : courses) {
+                String title = (String) course.get("title");
+                String provider = (String) course.get("provider");
+                boolean isNahq = "NAHQ".equals(provider);
+
+                em.createNativeQuery(
+                    "INSERT INTO lms_course (title, description, provider, duration_hours, ce_eligible, created_at, updated_at) " +
+                    "VALUES (:title, :desc, :provider, :hours, :ce, NOW(), NOW())"
+                )
+                .setParameter("title", title)
+                .setParameter("desc", title + " — " + provider + " course")
+                .setParameter("provider", provider)
+                .setParameter("hours", isNahq ? 4.0 : 2.0)
+                .setParameter("ce", isNahq)
+                .executeUpdate();
+
+                Object courseId = em.createNativeQuery("SELECT currval('lms_course_id_seq')").getSingleResult();
+                courseIdByTitle.put(title, ((Number) courseId).longValue());
+                coursesInserted++;
+            }
+
+            // Insert competency mappings
+            int mappingsInserted = 0;
+            int skipped = 0;
+
+            for (Map<String, Object> mapping : mappings) {
+                String courseName = (String) mapping.get("course");
+                String crosswalkCompName = (String) mapping.get("competency");
+                String level = (String) mapping.get("level");
+
+                Long courseId = courseIdByTitle.get(courseName);
+                if (courseId == null) { skipped++; continue; }
+
+                // Resolve crosswalk name to our DB name
+                String dbCompName = nameMap.get(crosswalkCompName);
+                if (dbCompName == null) { skipped++; continue; }
+
+                // Level-based relevance weight
+                double weight = switch (level) {
+                    case "F" -> 0.6;
+                    case "F/P" -> 0.8;
+                    case "P" -> 1.0;
+                    default -> 0.5;
+                };
+
+                try {
+                    em.createNativeQuery(
+                        "INSERT INTO course_competency_mapping (course_id, competency_id, framework_version_id, relevance_weight, created_at) " +
+                        "SELECT :courseId, c.id, :fvId, :weight, NOW() " +
+                        "FROM competency c WHERE c.name = :compName"
+                    )
+                    .setParameter("courseId", courseId)
+                    .setParameter("fvId", fvId)
+                    .setParameter("weight", weight)
+                    .setParameter("compName", dbCompName)
+                    .executeUpdate();
+                    mappingsInserted++;
+                } catch (Exception e) {
+                    skipped++;
+                }
+            }
+
+            long elapsed = System.currentTimeMillis() - start;
+            return Map.of(
+                "courses", coursesInserted,
+                "mappings", mappingsInserted,
+                "skipped", skipped,
+                "elapsedMs", elapsed
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to seed courses: " + e.getMessage(), e);
+        }
+    }
+
+    @Transactional
     public Map<String, Object> seedRoleTargets() {
         long start = System.currentTimeMillis();
 

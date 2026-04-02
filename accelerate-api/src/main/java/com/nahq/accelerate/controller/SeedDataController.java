@@ -69,6 +69,14 @@ public class SeedDataController {
         );
     }
 
+    @PostMapping("/courses")
+    @Operation(summary = "Seed NAHQ course catalog from Tim's curated crosswalk",
+               description = "Loads 26 real courses and competency mappings from Tim's " +
+                             "Lifepoint Upskilling Plan Input. Replaces synthetic courses.")
+    public Map<String, Object> seedCourses() {
+        return syntheticDataService.seedCourses();
+    }
+
     @PostMapping("/role-targets")
     @Operation(summary = "Seed NAHQ role targets from authoritative dataset",
                description = "Loads 1,512 role targets (28 competencies × 6 role groups × 9 job levels) " +

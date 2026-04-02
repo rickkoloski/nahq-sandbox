@@ -1,0 +1,229 @@
+[
+  {
+    "title": "AHRQ - Behavioral Health and Primary Care",
+    "provider": "AHRQ",
+    "domains": [
+      "Quality Leadership and Integration",
+      "Quality Review & Accountability"
+    ],
+    "competency_count": 2
+  },
+  {
+    "title": "AHRQ - Quality and Patient Safety",
+    "provider": "AHRQ",
+    "domains": [
+      "Patient Safety"
+    ],
+    "competency_count": 4
+  },
+  {
+    "title": "AHRQ - Team STEPPS",
+    "provider": "AHRQ",
+    "domains": [
+      "Performance & Process Improvement"
+    ],
+    "competency_count": 1
+  },
+  {
+    "title": "AHRQ - Unity Based Safety",
+    "provider": "AHRQ",
+    "domains": [
+      "Patient Safety"
+    ],
+    "competency_count": 4
+  },
+  {
+    "title": "AHRQ- Quality Improvement",
+    "provider": "AHRQ",
+    "domains": [
+      "Performance & Process Improvement"
+    ],
+    "competency_count": 3
+  },
+  {
+    "title": "CPHQ Review Course",
+    "provider": "NAHQ",
+    "domains": [
+      "Health Data Analytics",
+      "Patient Safety",
+      "Performance & Process Improvement",
+      "Population Health & Care Transitions",
+      "Professional Engagement",
+      "Quality Leadership and Integration",
+      "Quality Review & Accountability",
+      "Regulatory & Accreditation"
+    ],
+    "competency_count": 20
+  },
+  {
+    "title": "HQ Collections: HDA",
+    "provider": "NAHQ",
+    "domains": [
+      "Health Data Analytics"
+    ],
+    "competency_count": 5
+  },
+  {
+    "title": "HQ Collections: PE",
+    "provider": "NAHQ",
+    "domains": [
+      "Professional Engagement"
+    ],
+    "competency_count": 3
+  },
+  {
+    "title": "HQ Collections: PHCT",
+    "provider": "NAHQ",
+    "domains": [
+      "Population Health & Care Transitions"
+    ],
+    "competency_count": 3
+  },
+  {
+    "title": "HQ Collections: PPI",
+    "provider": "NAHQ",
+    "domains": [
+      "Performance & Process Improvement"
+    ],
+    "competency_count": 3
+  },
+  {
+    "title": "HQ Collections: PS",
+    "provider": "NAHQ",
+    "domains": [
+      "Patient Safety"
+    ],
+    "competency_count": 4
+  },
+  {
+    "title": "HQ Collections: QLI",
+    "provider": "NAHQ",
+    "domains": [
+      "Quality Leadership and Integration"
+    ],
+    "competency_count": 5
+  },
+  {
+    "title": "HQ Collections: QRA",
+    "provider": "NAHQ",
+    "domains": [
+      "Quality Review & Accountability"
+    ],
+    "competency_count": 3
+  },
+  {
+    "title": "HQ Collections: RA",
+    "provider": "NAHQ",
+    "domains": [
+      "Regulatory & Accreditation"
+    ],
+    "competency_count": 3
+  },
+  {
+    "title": "HQ Concepts",
+    "provider": "NAHQ",
+    "domains": [
+      "Health Data Analytics",
+      "Patient Safety",
+      "Performance & Process Improvement",
+      "Population Health & Care Transitions",
+      "Professional Engagement",
+      "Quality Leadership and Integration"
+    ],
+    "competency_count": 11
+  },
+  {
+    "title": "HQ Principles",
+    "provider": "NAHQ",
+    "domains": [
+      "Health Data Analytics",
+      "Patient Safety",
+      "Performance & Process Improvement",
+      "Population Health & Care Transitions",
+      "Professional Engagement",
+      "Quality Leadership and Integration",
+      "Regulatory & Accreditation"
+    ],
+    "competency_count": 13
+  },
+  {
+    "title": "HQ Solutions: Section 1",
+    "provider": "NAHQ",
+    "domains": [
+      "Quality Leadership and Integration"
+    ],
+    "competency_count": 5
+  },
+  {
+    "title": "HQ Solutions: Section 1, 3, 5",
+    "provider": "NAHQ",
+    "domains": [
+      "Professional Engagement"
+    ],
+    "competency_count": 1
+  },
+  {
+    "title": "HQ Solutions: Section 1,2,3,4,5,7",
+    "provider": "NAHQ",
+    "domains": [
+      "Professional Engagement"
+    ],
+    "competency_count": 1
+  },
+  {
+    "title": "HQ Solutions: Section 2",
+    "provider": "NAHQ",
+    "domains": [
+      "Quality Review & Accountability"
+    ],
+    "competency_count": 3
+  },
+  {
+    "title": "HQ Solutions: Section 3",
+    "provider": "NAHQ",
+    "domains": [
+      "Regulatory & Accreditation"
+    ],
+    "competency_count": 3
+  },
+  {
+    "title": "HQ Solutions: Section 4",
+    "provider": "NAHQ",
+    "domains": [
+      "Patient Safety"
+    ],
+    "competency_count": 4
+  },
+  {
+    "title": "HQ Solutions: Section 5",
+    "provider": "NAHQ",
+    "domains": [
+      "Performance & Process Improvement"
+    ],
+    "competency_count": 3
+  },
+  {
+    "title": "HQ Solutions: Section 5,6,7",
+    "provider": "NAHQ",
+    "domains": [
+      "Professional Engagement"
+    ],
+    "competency_count": 1
+  },
+  {
+    "title": "HQ Solutions: Section 6",
+    "provider": "NAHQ",
+    "domains": [
+      "Health Data Analytics"
+    ],
+    "competency_count": 5
+  },
+  {
+    "title": "HQ Solutions: Section 7",
+    "provider": "NAHQ",
+    "domains": [
+      "Population Health & Care Transitions"
+    ],
+    "competency_count": 3
+  }
+]

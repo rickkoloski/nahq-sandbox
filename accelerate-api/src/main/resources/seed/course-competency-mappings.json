@@ -1,0 +1,698 @@
+[
+  {
+    "course": "HQ Concepts",
+    "domain": "Health Data Analytics",
+    "competency": "Acquire data from source systems",
+    "level": "F"
+  },
+  {
+    "course": "HQ Solutions: Section 6",
+    "domain": "Health Data Analytics",
+    "competency": "Acquire data from source systems.",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Collections: HDA",
+    "domain": "Health Data Analytics",
+    "competency": "Acquire data from source systems.",
+    "level": "F/P"
+  },
+  {
+    "course": "CPHQ Review Course",
+    "domain": "Population Health & Care Transitions",
+    "competency": "Apply a holistic approach to improvement",
+    "level": "F"
+  },
+  {
+    "course": "HQ Concepts",
+    "domain": "Population Health & Care Transitions",
+    "competency": "Apply a holistic approach to improvement",
+    "level": "F"
+  },
+  {
+    "course": "HQ Solutions: Section 7",
+    "domain": "Population Health & Care Transitions",
+    "competency": "Apply a holistic approach to improvement.",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Collections: PHCT",
+    "domain": "Population Health & Care Transitions",
+    "competency": "Apply a holistic approach to improvement.",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Concepts",
+    "domain": "Health Data Analytics",
+    "competency": "Apply procedures for the governance of data assets",
+    "level": "F"
+  },
+  {
+    "course": "HQ Principles",
+    "domain": "Health Data Analytics",
+    "competency": "Apply procedures for the governance of data assets",
+    "level": "F"
+  },
+  {
+    "course": "HQ Solutions: Section 6",
+    "domain": "Health Data Analytics",
+    "competency": "Apply procedures for the governance of data assets.",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Collections: HDA",
+    "domain": "Health Data Analytics",
+    "competency": "Apply procedures for the governance of data assets.",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Solutions: Section 1",
+    "domain": "Quality Leadership and Integration",
+    "competency": "Apply procedures to regulate the use of privileged or confidential infidential information.",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Collections: QLI",
+    "domain": "Quality Leadership and Integration",
+    "competency": "Apply procedures to regulate the use of privileged or confidential infidential information.",
+    "level": "F/P"
+  },
+  {
+    "course": "AHRQ- Quality Improvement",
+    "domain": "Performance & Process Improvement",
+    "competency": "Apply project management methods",
+    "level": "NA"
+  },
+  {
+    "course": "HQ Solutions: Section 5",
+    "domain": "Performance & Process Improvement",
+    "competency": "Apply project management methods.",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Collections: PPI",
+    "domain": "Performance & Process Improvement",
+    "competency": "Apply project management methods.",
+    "level": "F/P"
+  },
+  {
+    "course": "AHRQ - Quality and Patient Safety",
+    "domain": "Patient Safety",
+    "competency": "Apply safety science principles and methods in healthcare quality work",
+    "level": "NA"
+  },
+  {
+    "course": "AHRQ - Unity Based Safety",
+    "domain": "Patient Safety",
+    "competency": "Apply safety science principles and methods in healthcare quality work",
+    "level": "NA"
+  },
+  {
+    "course": "CPHQ Review Course",
+    "domain": "Patient Safety",
+    "competency": "Apply safety science principles and methods in healthcare quality work",
+    "level": "F"
+  },
+  {
+    "course": "HQ Concepts",
+    "domain": "Patient Safety",
+    "competency": "Apply safety science principles and methods in healthcare quality work",
+    "level": "F"
+  },
+  {
+    "course": "HQ Principles",
+    "domain": "Patient Safety",
+    "competency": "Apply safety science principles and methods in healthcare quality work",
+    "level": "F"
+  },
+  {
+    "course": "HQ Solutions: Section 4",
+    "domain": "Patient Safety",
+    "competency": "Apply safety science principles and methods in\nhealthcare quality work.",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Collections: PS",
+    "domain": "Patient Safety",
+    "competency": "Apply safety science principles and methods in\nhealthcare quality work.",
+    "level": "F/P"
+  },
+  {
+    "course": "AHRQ - Quality and Patient Safety",
+    "domain": "Patient Safety",
+    "competency": "Assess the organization\u2019s patient safety culture",
+    "level": "NA"
+  },
+  {
+    "course": "AHRQ - Unity Based Safety",
+    "domain": "Patient Safety",
+    "competency": "Assess the organization\u2019s patient safety culture",
+    "level": "NA"
+  },
+  {
+    "course": "CPHQ Review Course",
+    "domain": "Patient Safety",
+    "competency": "Assess the organization\u2019s patient safety culture",
+    "level": "F"
+  },
+  {
+    "course": "HQ Solutions: Section 4",
+    "domain": "Patient Safety",
+    "competency": "Assess the organization\u2019s patient safety culture.",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Collections: PS",
+    "domain": "Patient Safety",
+    "competency": "Assess the organization\u2019s patient safety culture.",
+    "level": "F/P"
+  },
+  {
+    "course": "AHRQ - Quality and Patient Safety",
+    "domain": "Patient Safety",
+    "competency": "Collaborate with stakeholders to analyze patient safety risks and events",
+    "level": "NA"
+  },
+  {
+    "course": "AHRQ - Unity Based Safety",
+    "domain": "Patient Safety",
+    "competency": "Collaborate with stakeholders to analyze patient safety risks and events",
+    "level": "NA"
+  },
+  {
+    "course": "HQ Solutions: Section 4",
+    "domain": "Patient Safety",
+    "competency": "Collaborate with stakeholders to analyze patient safety\nrisks and events.",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Collections: PS",
+    "domain": "Patient Safety",
+    "competency": "Collaborate with stakeholders to analyze patient safety\nrisks and events.",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Principles",
+    "domain": "Population Health & Care Transitions",
+    "competency": "Collaborate with stakeholders to improve care processes and transitions",
+    "level": "P"
+  },
+  {
+    "course": "HQ Solutions: Section 7",
+    "domain": "Population Health & Care Transitions",
+    "competency": "Collaborate with stakeholders to improve care\nprocesses and transitions.",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Collections: PHCT",
+    "domain": "Population Health & Care Transitions",
+    "competency": "Collaborate with stakeholders to improve care\nprocesses and transitions.",
+    "level": "F/P"
+  },
+  {
+    "course": "CPHQ Review Course",
+    "domain": "Quality Leadership and Integration",
+    "competency": "Communicate effectively with different audiences to achieve quality goals",
+    "level": "F"
+  },
+  {
+    "course": "HQ Concepts",
+    "domain": "Quality Leadership and Integration",
+    "competency": "Communicate effectively with different audiences to achieve quality goals",
+    "level": "F"
+  },
+  {
+    "course": "HQ Principles",
+    "domain": "Quality Leadership and Integration",
+    "competency": "Communicate effectively with different audiences to achieve quality goals",
+    "level": "F"
+  },
+  {
+    "course": "HQ Solutions: Section 1",
+    "domain": "Quality Leadership and Integration",
+    "competency": "Communicate effectively with different audiences\nto achieve quality goals.",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Collections: QLI",
+    "domain": "Quality Leadership and Integration",
+    "competency": "Communicate effectively with different audiences\nto achieve quality goals.",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Solutions: Section 2",
+    "domain": "Quality Review & Accountability",
+    "competency": "Conduct the activities to execute measure requirements.",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Collections: QRA",
+    "domain": "Quality Review & Accountability",
+    "competency": "Conduct the activities to execute measure requirements.",
+    "level": "F/P"
+  },
+  {
+    "course": "CPHQ Review Course",
+    "domain": "Quality Leadership and Integration",
+    "competency": "Create learning opportunities to advance healthcare quality throughout the organization",
+    "level": "F"
+  },
+  {
+    "course": "HQ Concepts",
+    "domain": "Quality Leadership and Integration",
+    "competency": "Create learning opportunities to advance healthcare quality throughout the organization",
+    "level": "F"
+  },
+  {
+    "course": "HQ Principles",
+    "domain": "Quality Leadership and Integration",
+    "competency": "Create learning opportunities to advance healthcare quality throughout the organization",
+    "level": "P"
+  },
+  {
+    "course": "HQ Solutions: Section 1",
+    "domain": "Quality Leadership and Integration",
+    "competency": "Create learning opportunities to advance\nhealthcare quality throughout the organization.",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Collections: QLI",
+    "domain": "Quality Leadership and Integration",
+    "competency": "Create learning opportunities to advance\nhealthcare quality throughout the organization.",
+    "level": "F/P"
+  },
+  {
+    "course": "CPHQ Review Course",
+    "domain": "Health Data Analytics",
+    "competency": "Design data collection plans for key metrics and performance indicators",
+    "level": "F"
+  },
+  {
+    "course": "HQ Principles",
+    "domain": "Health Data Analytics",
+    "competency": "Design data collection plans for key metrics and performance indicators",
+    "level": "F"
+  },
+  {
+    "course": "HQ Solutions: Section 6",
+    "domain": "Health Data Analytics",
+    "competency": "Design data collection plans for key metrics and\nperformance indicators.",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Collections: HDA",
+    "domain": "Health Data Analytics",
+    "competency": "Design data collection plans for key metrics and\nperformance indicators.",
+    "level": "F/P"
+  },
+  {
+    "course": "AHRQ - Behavioral Health and Primary Care",
+    "domain": "Quality Leadership and Integration",
+    "competency": "Direct the quality infrastructure to achieve organizational objectives",
+    "level": "NA"
+  },
+  {
+    "course": "CPHQ Review Course",
+    "domain": "Quality Leadership and Integration",
+    "competency": "Direct the quality infrastructure to achieve organizational objectives",
+    "level": "F"
+  },
+  {
+    "course": "HQ Concepts",
+    "domain": "Quality Leadership and Integration",
+    "competency": "Direct the quality infrastructure to achieve organizational objectives",
+    "level": "F"
+  },
+  {
+    "course": "HQ Principles",
+    "domain": "Quality Leadership and Integration",
+    "competency": "Direct the quality infrastructure to achieve organizational objectives",
+    "level": "P"
+  },
+  {
+    "course": "HQ Solutions: Section 1",
+    "domain": "Quality Leadership and Integration",
+    "competency": "Direct the quality infrastructure to achieve organizational objectives",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Collections: QLI",
+    "domain": "Quality Leadership and Integration",
+    "competency": "Direct the quality infrastructure to achieve organizational objectives",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Concepts",
+    "domain": "Professional Engagement",
+    "competency": "Engage in lifelong learning as a healthcare quality professional",
+    "level": "F"
+  },
+  {
+    "course": "HQ Solutions: Section 1,2,3,4,5,7",
+    "domain": "Professional Engagement",
+    "competency": "Engage in lifelong learning as a healthcare quality professional",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Collections: PE",
+    "domain": "Professional Engagement",
+    "competency": "Engage in lifelong learning as a healthcare quality professional",
+    "level": "F/P"
+  },
+  {
+    "course": "CPHQ Review Course",
+    "domain": "Regulatory & Accreditation",
+    "competency": "Facilitate continuous survey readiness activities",
+    "level": "F"
+  },
+  {
+    "course": "HQ Solutions: Section 3",
+    "domain": "Regulatory & Accreditation",
+    "competency": "Facilitate continuous survey readiness activities.",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Collections: RA",
+    "domain": "Regulatory & Accreditation",
+    "competency": "Facilitate continuous survey readiness activities.",
+    "level": "F/P"
+  },
+  {
+    "course": "CPHQ Review Course",
+    "domain": "Regulatory & Accreditation",
+    "competency": "Guide the organization through survey processes and findings",
+    "level": "F"
+  },
+  {
+    "course": "HQ Solutions: Section 3",
+    "domain": "Regulatory & Accreditation",
+    "competency": "Guide the organization through survey processes and findings.",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Collections: RA",
+    "domain": "Regulatory & Accreditation",
+    "competency": "Guide the organization through survey processes and findings.",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Solutions: Section 2",
+    "domain": "Quality Review & Accountability",
+    "competency": "Implement processes to facilitate practitioner\nperformance review activities.",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Collections: QRA",
+    "domain": "Quality Review & Accountability",
+    "competency": "Implement processes to facilitate practitioner\nperformance review activities.",
+    "level": "F/P"
+  },
+  {
+    "course": "CPHQ Review Course",
+    "domain": "Quality Leadership and Integration",
+    "competency": "Implement processes to promote stakeholder engagement and interprofessional teamwork",
+    "level": "F"
+  },
+  {
+    "course": "HQ Concepts",
+    "domain": "Quality Leadership and Integration",
+    "competency": "Implement processes to promote stakeholder engagement and interprofessional teamwork",
+    "level": "F"
+  },
+  {
+    "course": "HQ Principles",
+    "domain": "Quality Leadership and Integration",
+    "competency": "Implement processes to promote stakeholder engagement and interprofessional teamwork",
+    "level": "F"
+  },
+  {
+    "course": "HQ Solutions: Section 1",
+    "domain": "Quality Leadership and Integration",
+    "competency": "Implement processes to promote stakeholder engagement and interprofessional teamwork.",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Collections: QLI",
+    "domain": "Quality Leadership and Integration",
+    "competency": "Implement processes to promote stakeholder engagement and interprofessional teamwork.",
+    "level": "F/P"
+  },
+  {
+    "course": "AHRQ - Team STEPPS",
+    "domain": "Performance & Process Improvement",
+    "competency": "Implement standard performance and process improvement (PPI) methods",
+    "level": "NA"
+  },
+  {
+    "course": "AHRQ- Quality Improvement",
+    "domain": "Performance & Process Improvement",
+    "competency": "Implement standard performance and process improvement (PPI) methods",
+    "level": "NA"
+  },
+  {
+    "course": "CPHQ Review Course",
+    "domain": "Performance & Process Improvement",
+    "competency": "Implement standard performance and process improvement (PPI) methods",
+    "level": "F"
+  },
+  {
+    "course": "HQ Concepts",
+    "domain": "Performance & Process Improvement",
+    "competency": "Implement standard performance and process improvement (PPI) methods",
+    "level": "F"
+  },
+  {
+    "course": "HQ Principles",
+    "domain": "Performance & Process Improvement",
+    "competency": "Implement standard performance and process improvement (PPI) methods",
+    "level": "F"
+  },
+  {
+    "course": "HQ Solutions: Section 5",
+    "domain": "Performance & Process Improvement",
+    "competency": "Implement standard performance and process\nimprovement (PPI) methods.",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Collections: PPI",
+    "domain": "Performance & Process Improvement",
+    "competency": "Implement standard performance and process\nimprovement (PPI) methods.",
+    "level": "F/P"
+  },
+  {
+    "course": "CPHQ Review Course",
+    "domain": "Health Data Analytics",
+    "competency": "Integrate data from internal and external electronic data systems",
+    "level": "F"
+  },
+  {
+    "course": "HQ Solutions: Section 6",
+    "domain": "Health Data Analytics",
+    "competency": "Integrate data from internal and external electronic data\nsystems.",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Collections: HDA",
+    "domain": "Health Data Analytics",
+    "competency": "Integrate data from internal and external electronic data\nsystems.",
+    "level": "F/P"
+  },
+  {
+    "course": "CPHQ Review Course",
+    "domain": "Professional Engagement",
+    "competency": "Integrate ethical standards into healthcare quality practice",
+    "level": "F"
+  },
+  {
+    "course": "HQ Solutions: Section 1, 3, 5",
+    "domain": "Professional Engagement",
+    "competency": "Integrate Ethical Standards into Healthcare Quality Practice",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Collections: PE",
+    "domain": "Professional Engagement",
+    "competency": "Integrate Ethical Standards into Healthcare Quality Practice",
+    "level": "F/P"
+  },
+  {
+    "course": "CPHQ Review Course",
+    "domain": "Population Health & Care Transitions",
+    "competency": "Integrate population health management strategies into quality work",
+    "level": "F"
+  },
+  {
+    "course": "HQ Solutions: Section 7",
+    "domain": "Population Health & Care Transitions",
+    "competency": "Integrate population health management\nstrategies into quality work.",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Collections: PHCT",
+    "domain": "Population Health & Care Transitions",
+    "competency": "Integrate population health management\nstrategies into quality work.",
+    "level": "F/P"
+  },
+  {
+    "course": "CPHQ Review Course",
+    "domain": "Regulatory & Accreditation",
+    "competency": "Operationalize processes to support compliance with regulations and standards",
+    "level": "F"
+  },
+  {
+    "course": "HQ Principles",
+    "domain": "Regulatory & Accreditation",
+    "competency": "Operationalize processes to support compliance with regulations and standards",
+    "level": "F"
+  },
+  {
+    "course": "HQ Solutions: Section 3",
+    "domain": "Regulatory & Accreditation",
+    "competency": "Operationalize processes to support compliance with\nregulations and standards.",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Collections: RA",
+    "domain": "Regulatory & Accreditation",
+    "competency": "Operationalize processes to support compliance with\nregulations and standards.",
+    "level": "F/P"
+  },
+  {
+    "course": "CPHQ Review Course",
+    "domain": "Professional Engagement",
+    "competency": "Participate in activities that advance the healthcare quality profession",
+    "level": "F"
+  },
+  {
+    "course": "HQ Principles",
+    "domain": "Professional Engagement",
+    "competency": "Participate in activities that advance the healthcare quality profession",
+    "level": "F"
+  },
+  {
+    "course": "HQ Solutions: Section 5,6,7",
+    "domain": "Professional Engagement",
+    "competency": "Participate in activities that advance the healthcare quality profession",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Collections: PE",
+    "domain": "Professional Engagement",
+    "competency": "Participate in activities that advance the healthcare quality profession",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Solutions: Section 2",
+    "domain": "Quality Review & Accountability",
+    "competency": "Relate current and emerging payment models to \nhealthcare quality work.",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Collections: QRA",
+    "domain": "Quality Review & Accountability",
+    "competency": "Relate current and emerging payment models to \nhealthcare quality work.",
+    "level": "F/P"
+  },
+  {
+    "course": "AHRQ - Behavioral Health and Primary Care",
+    "domain": "Quality Review & Accountability",
+    "competency": "Relate current and emerging payment models to healthcare quality work",
+    "level": "NA"
+  },
+  {
+    "course": "CPHQ Review Course",
+    "domain": "Quality Review & Accountability",
+    "competency": "Relate current and emerging payment models to healthcare quality work",
+    "level": "F"
+  },
+  {
+    "course": "AHRQ- Quality Improvement",
+    "domain": "Performance & Process Improvement",
+    "competency": "Use change management principles and tools",
+    "level": "NA"
+  },
+  {
+    "course": "CPHQ Review Course",
+    "domain": "Performance & Process Improvement",
+    "competency": "Use change management principles and tools",
+    "level": "F"
+  },
+  {
+    "course": "HQ Concepts",
+    "domain": "Performance & Process Improvement",
+    "competency": "Use change management principles and tools",
+    "level": "F"
+  },
+  {
+    "course": "HQ Principles",
+    "domain": "Performance & Process Improvement",
+    "competency": "Use change management principles and tools",
+    "level": "F"
+  },
+  {
+    "course": "HQ Solutions: Section 5",
+    "domain": "Performance & Process Improvement",
+    "competency": "Use change management principles and tools.",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Collections: PPI",
+    "domain": "Performance & Process Improvement",
+    "competency": "Use change management principles and tools.",
+    "level": "F/P"
+  },
+  {
+    "course": "AHRQ - Quality and Patient Safety",
+    "domain": "Patient Safety",
+    "competency": "Use organizational procedures to identify and report patient safety risks and events",
+    "level": "NA"
+  },
+  {
+    "course": "AHRQ - Unity Based Safety",
+    "domain": "Patient Safety",
+    "competency": "Use organizational procedures to identify and report patient safety risks and events",
+    "level": "NA"
+  },
+  {
+    "course": "CPHQ Review Course",
+    "domain": "Patient Safety",
+    "competency": "Use organizational procedures to identify and report patient safety risks and events",
+    "level": "F"
+  },
+  {
+    "course": "HQ Solutions: Section 4",
+    "domain": "Patient Safety",
+    "competency": "Use organizational procedures to identify and report\npatient safety risks and events.",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Collections: PS",
+    "domain": "Patient Safety",
+    "competency": "Use organizational procedures to identify and report\npatient safety risks and events.",
+    "level": "F/P"
+  },
+  {
+    "course": "CPHQ Review Course",
+    "domain": "Health Data Analytics",
+    "competency": "Use statistical and visualization methods",
+    "level": "F"
+  },
+  {
+    "course": "HQ Principles",
+    "domain": "Health Data Analytics",
+    "competency": "Use statistical and visualization methods",
+    "level": "F"
+  },
+  {
+    "course": "HQ Solutions: Section 6",
+    "domain": "Health Data Analytics",
+    "competency": "Use statistical and visualization methods.",
+    "level": "F/P"
+  },
+  {
+    "course": "HQ Collections: HDA",
+    "domain": "Health Data Analytics",
+    "competency": "Use statistical and visualization methods.",
+    "level": "F/P"
+  }
+]
