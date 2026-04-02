@@ -2,7 +2,7 @@
 
 **Date:** April 2, 2026
 **Source:** Response to Distilled Questions.docx (PM file #742)
-**Status:** Reviewed — action items identified
+**Status:** Reviewed — data files read and analyzed
 
 ---
 
@@ -73,15 +73,176 @@
 
 ## Immediate Actions (priority order)
 
-1. **Read #738 (Role Group Target Asset)** — ingest real role targets
-2. **Read #740 (Lifepoint Upskilling Plan Input)** — understand course mapping structure
-3. **Read #668 (2025 Competency Framework Sheet)** — get exact 28-competency list, identify our extra one
+1. ~~**Read #738 (Role Group Target Asset)**~~ — **DONE** (see findings below)
+2. ~~**Read #740 (Lifepoint Upskilling Plan Input)**~~ — **DONE** (see findings below)
+3. ~~**Read #668 (2025 Competency Framework Sheet)**~~ — **DONE** (see findings below)
 4. **Read #739 (Discussion Guide v5)** — check for threshold table and any skill statement data
 5. **Fix competency count** — remove extra competency from seed
 6. **Update seed scoring** — individual competency scores should be integers (0, 1, 2, 3), not continuous decimals
+7. **Ingest Role Group Target Asset** — replace placeholder targets with real 1,512-row dataset
+8. **Ingest Course Crosswalk** — replace pgvector semantic matching with curated 26-course catalog
+9. **Clarify 28 vs 29 competency discrepancy** — ask Tim which one was dropped
 
 ## Files to Read Later (not blocking)
 
 - **#741** — Assess Only and Patient Safety requirements (pending change order)
 - **#687** — Skills Tooltips_Updated.xlsx (may contain partial skill statement data)
 - **#688** — Survey Question Mapping_2025.xlsx (Qualtrics question → competency mapping)
+
+---
+
+## Data File Analysis (April 2, 2026)
+
+### File #738: Role Group Target Asset
+
+**Structure:** 1,512 rows = 28 competencies × 6 role groups × 9 job levels. Complete matrix.
+
+**Columns:** Domain | Competency | Role Group | Job Level | Role Group Target
+
+**Role Groups (6):**
+1. Core Quality & Safety Workforce
+2. Clinical Quality & Safety Bridge
+3. Senior Leadership & Governance
+4. Frontline Care Delivery
+5. Diagnostic, Therapeutic & Interventional Clinical Support
+6. Ancillary & Operational Support
+
+**Job Levels (9):**
+1. C-Level/System Executive
+2. Vice President
+3. Director/Executive Director
+4. Manager/Supervisor
+5. Specialist/Analyst
+6. Coordinator
+7. Consultant/Advisor
+8. Clinical Staff
+9. Support Staff
+
+**Target values:** 0, 1, 2, 3 (integers, matching NAHQ's 0-3 scale)
+
+**Competencies per domain:**
+| Domain | Count |
+|--------|-------|
+| Quality Leadership and Integration | 5 |
+| Health Data Analytics | 4 |
+| Patient Safety | 4 |
+| Performance and Process Improvement | 3 |
+| Population Health and Care Transitions | 3 |
+| Professional Engagement | 3 |
+| Quality Review and Accountability | 3 |
+| Regulatory and Accreditation | 3 |
+| **Total** | **28** |
+
+**Impact on our system:**
+- Our seed has 29 competencies with a different per-domain distribution
+- Our RoleTarget table has only 2 role types × 29 competencies. This dataset has 6 role groups × 9 job levels × 28 competencies
+- RoleTarget model needs expansion: `role_type_id` → `role_group` + `job_level` (or a composite RoleGroup entity)
+- Domain model Appendix candidate: RoleGroup/JobLevel as a governed reference table
+
+### File #740: Lifepoint Upskilling Plan Input
+
+**Three sheets:**
+
+**Sheet 1: "Plans" (2,380 rows)** — Real upskilling plans for 82 Lifepoint participants
+- Columns: Name, Title, Role, Domain, Competency Statement, Current Level, Adjudicated Results, Target Level, Difference, Upskilling Strategy, Upskilling Assignment, Targeted Completion Date
+- Current Level and Target Level are integers (1, 2, 3) — confirms categorical scoring
+- Upskilling Strategy: "Education" or "No upskilling required"
+- Upskilling Assignment: specific course codes (e.g., "PS2: HQ Collections - Lessons 4-6")
+- "Adjudicated Results" column — this suggests there's a review/adjustment step after raw scoring
+
+**Sheet 2: "Quality Course Crosswalk" (1,000 rows)** — Curated course-to-competency mappings
+- Columns: Course Name, Sponsoring Org, Domain, Competency, Level, Count
+- 26 unique courses from 2 sponsors (NAHQ, AHRQ)
+- Level values: F (Foundational), F/P (Foundational/Proficient), P, NA
+- This is the authoritative replacement for our pgvector semantic matching
+
+**Courses (26):**
+- NAHQ courses: HQ Concepts, HQ Principles, HQ Solutions (Sections 1-7), HQ Collections (by domain: HDA, PE, PHCT, PPI, PS, QLI, QRA, RA), CPHQ Review Course
+- AHRQ courses: Quality Improvement, Quality and Patient Safety, Team STEPPS, Unity Based Safety, Behavioral Health and Primary Care
+
+**Sheet 3: "List" (33 rows)** — Quick reference: Domain → Competency → Default course assignment code
+
+**Impact on our system:**
+- Replace LmsCourse seed with these 26 real courses
+- Replace pgvector semantic matching with explicit course_competency_mapping from the crosswalk
+- The "Adjudicated Results" concept suggests scoring may not be purely self-reported — needs clarification
+- Upskilling plan generation becomes: find gaps → look up course crosswalk → assign courses. Deterministic, not AI-generated.
+
+### File #668: 2025 NAHQ Competency Framework Sheet (PDF)
+
+**Published framework says: 8 domains, 29 competencies, 486 skill statements.**
+
+This contradicts Tim's Q&A answer of 28 and the Role Group Target Asset which has exactly 28.
+
+**Competencies listed in PDF (29):**
+
+*Professional Engagement (3):*
+1. Integrate ethical standards into healthcare quality practice
+2. Engage in lifelong learning as a healthcare quality professional
+3. Participate in activities that advance the healthcare quality profession
+
+*Quality Leadership and Integration (5):*
+4. Direct the quality infrastructure to achieve organizational objectives
+5. Apply procedures to regulate the use of privileged or confidential information
+6. Implement processes to promote stakeholder engagement and interprofessional teamwork
+7. Create learning opportunities to advance healthcare quality throughout the organization
+8. Communicate effectively with different audiences to achieve quality goals
+
+*Performance and Process Improvement (3):*
+9. Implement standard performance and process improvement (PPI) methods
+10. Apply project management methods
+11. Use change management principles and tools
+
+*Population Health and Care Transitions (3):*
+12. Integrate population health management strategies into quality work
+13. Apply a holistic approach to improvement
+14. Collaborate with stakeholders to improve care processes and transitions
+
+*Health Data Analytics (5):*
+15. Apply procedures for the governance of data assets
+16. Design data collection plans for key metrics and performance indicators
+17. Acquire data from source systems
+18. Integrate data from internal and external electronic data systems
+19. Use statistical and visualization methods
+
+*Patient Safety (4):*
+20. Assess the organization's patient safety culture
+21. Apply safety science principles and methods in healthcare quality work
+22. Use organizational procedures to identify and report patient safety risks and events
+23. Collaborate with stakeholders to analyze patient safety risks and events
+
+*Regulatory and Accreditation (3):*
+24. Operationalize processes to support compliance with regulations and standards
+25. Facilitate continuous survey readiness activities
+26. Guide the organization through survey processes and findings
+
+*Quality Review and Accountability (3):*
+27. Relate current and emerging payment models to healthcare quality work
+28. Conduct the activities to execute measure requirements
+29. Implement processes to facilitate practitioner performance review activities
+
+**PDF total: 29 (3+5+3+3+5+4+3+3)**
+**Role Target Asset total: 28 (3+5+3+3+4+4+3+3)**
+
+**Discrepancy:** Health Data Analytics has 5 in the PDF but 4 in the Role Target Asset. One HDA competency was likely consolidated. Need Tim to confirm which. The Role Target Asset competency names are slightly different (more operational wording) — Tim may have updated them for the Accelerate context.
+
+### 28 vs 29 — Specific Discrepancy
+
+Comparing the two lists for Health Data Analytics:
+
+**PDF (5):**
+1. Apply procedures for the governance of data assets
+2. Design data collection plans for key metrics and performance indicators
+3. Acquire data from source systems
+4. Integrate data from internal and external electronic data systems
+5. Use statistical and visualization methods
+
+**Role Target Asset (4):**
+1. Apply procedures for the management of data and systems.
+2. Design data collection and data analysis plans...
+3. Integrate data from internal and external source systems...
+4. Use statistical and visualization methods...
+
+It appears "Acquire data from source systems" (#3 in PDF) was merged into either #1 or #3 in the operational version, and "Apply procedures for the governance of data assets" was reworded to "Apply procedures for the management of data and systems."
+
+**Recommendation:** Use the Role Target Asset's 28 competencies as authoritative for engineering. The published PDF is the public-facing framework; the operational version (28) is what drives scoring and targets. Ask Tim to confirm.
